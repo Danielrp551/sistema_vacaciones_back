@@ -1,0 +1,3 @@
+﻿<Project>
+  <Import Project="..\buildMultiTargeting\PRUEBA_TECNICA_EY.props" />
+</Project>

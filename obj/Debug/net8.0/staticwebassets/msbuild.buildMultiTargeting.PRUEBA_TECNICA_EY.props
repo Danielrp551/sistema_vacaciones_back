@@ -1,0 +1,3 @@
+﻿<Project>
+  <Import Project="..\build\PRUEBA_TECNICA_EY.props" />
+</Project>

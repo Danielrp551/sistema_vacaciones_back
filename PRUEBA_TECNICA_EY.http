@@ -1,0 +1,6 @@
+@SISTEMA_VACACIONES_HostAddress = http://localhost:5098
+
+GET {{SISTEMA_VACACIONES_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

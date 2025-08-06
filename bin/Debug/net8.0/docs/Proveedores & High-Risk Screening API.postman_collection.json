@@ -1,0 +1,322 @@
+{
+	"info": {
+		"_postman_id": "3835c6e8-a9c0-4cbe-ba32-4a7fecd15b07",
+		"name": "Proveedores & High-Risk Screening API",
+		"description": "**Descripción:**  \nEsta colección de Postman documenta el conjunto de endpoints del REST API desarrollado para realizar dos funciones principales:\n\n1. **Autenticación y Gestión de Proveedores:**  \n    Permite a los usuarios autenticados (a través de JWT) crear, consultar, actualizar y eliminar proveedores, facilitando la administración y debida diligencia de los proveedores de la institución.\n    \n2. **Screening en Listas de Alto Riesgo:**  \n    Implementa un servicio de web scraping que extrae información de diversas fuentes de alto riesgo, tales como:\n    \n    - **ICIJ Offshore Leaks**\n        \n    - **OFAC Sanctions List**\n        \n    - **World Bank Sanctioned Firms**\n        \n\n```\nCon esta funcionalidad, se realiza una búsqueda en línea para identificar entidades presentes en listas de riesgo. Esta ruta está protegida mediante autenticación JWT y cuenta con un límite de 20 llamadas por minuto (rate limiting).\n\n ```\n\n**Ejemplos de Solicitudes para la Ruta de Screening**\n\nA continuación se muestran ejemplos de solicitudes a considerar para probar la funcionalidad de screening:\n\n1. **Ejemplo 1 - Entidad \"Micro\":**\n    \n    - GET {{baseUrl}}/api/screening?EntityName=**Micro**\n        \n    - **Descripción:**  \n        Realiza el scraping para la entidad “**Micro**” en las fuentes de alto riesgo.\n        \n2. **Ejemplo 2 - Entidad \"SHAANXI\":**\n    \n    - GET {{baseUrl}}/api/screening?EntityName=**SHAANXI**\n        \n    - **Descripción:**  \n        Consulta las listas de alto riesgo para la entidad “**SHAANXI**”.\n        \n3. **Ejemplo 3 - Entidad \"Nishan\":**\n    \n    - GET {{baseUrl}}/api/screening?EntityName=**Nishan**\n        \n    - **Descripción:**  \n        Busca coincidencias en las fuentes para la entidad “**Nishan**”.\n        \n4. **Ejemplo 4 - Entidad \"HEBEI\":**\n    \n    - GET {{baseUrl}}/api/screening?EntityName=**HEBEI**\n        \n    - **Descripción:**  \n        Realiza un análisis en las listas de alto riesgo para “**HEBEI**”.\n        \n5. **Ejemplo 5 - Entidad \"ECOGRAPH\":**\n    \n    - GET {{baseUrl}}/api/screening?EntityName=**ECOGRAPH**\n        \n    - **Descripción:**  \n        Ejecuta el scraping de fuentes para la entidad “**ECOGRAPH**”.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "40937769"
+	},
+	"item": [
+		{
+			"name": "Proveedor",
+			"item": [
+				{
+					"name": "GetAll Proveedores",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/proveedor",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"proveedor"
+							],
+							"query": [
+								{
+									"key": "SearchValue",
+									"value": "\"\"",
+									"disabled": true
+								},
+								{
+									"key": "PageNumber",
+									"value": "",
+									"disabled": true
+								},
+								{
+									"key": "PageSize",
+									"value": null,
+									"disabled": true
+								},
+								{
+									"key": "Paises",
+									"value": "CO",
+									"disabled": true
+								},
+								{
+									"key": "SortBy",
+									"value": null,
+									"disabled": true
+								},
+								{
+									"key": "IsDescending",
+									"value": null,
+									"disabled": true
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Proveedor",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"razonSocial\": \"Acme Corporation\",\r\n  \"nombreComercial\": \"Acme Inc\",\r\n  \"identificacionTributaria\": \"12345678901\",\r\n  \"numeroTelefonico\": \"5551234567\",\r\n  \"correoElectronico\": \"contacto@acme.com\",\r\n  \"sitioWeb\": \"https://www.acme.com\",\r\n  \"direccionFisica\": \"123 Calle Falsa\",\r\n  \"pais\": \"US\",\r\n  \"facturacionAnualUSD\": 1000000\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/proveedor",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"proveedor"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Editar Proveedor",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"razonSocial\": \"Acme Corporation Edited\",\r\n  \"nombreComercial\": \"Acme Inc\",\r\n  \"identificacionTributaria\": \"12345678901\",\r\n  \"numeroTelefonico\": \"5551234567\",\r\n  \"correoElectronico\": \"contacto@acme.com\",\r\n  \"sitioWeb\": \"https://www.acme.com\",\r\n  \"direccionFisica\": \"123 Calle Falsa\",\r\n  \"pais\": \"US\",\r\n  \"facturacionAnualUSD\": 1000000\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/proveedor/{{id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"proveedor",
+								"{{id}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Eliminar Proveedor",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/proveedor/{{id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"proveedor",
+								"{{id}}"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"description": "Esta carpeta agrupa los endpoints encargados del CRUD (crear, leer, actualizar, eliminar) para la gestión de proveedores.\n\n- **Propósito:** Administrar la información de proveedores, incluyendo la creación, edición, eliminación y listado de proveedores en la aplicación de debida diligencia.\n    \n- **Ejemplos de Endpoints:**\n    \n    - **GET /api/proveedor:** Obtiene el listado de proveedores. Permite filtrar por nombre, país, paginación, y ordenamiento (por ejemplo, ordenar por `nombreComercial` o `facturacionAnualUSD`).\n        \n    - **POST /api/proveedor:** Crea un nuevo proveedor.\n        \n    - **PUT /api/proveedor/{id}:** Actualiza los datos de un proveedor existente.\n        \n    - **DELETE /api/proveedor/{id}:** Elimina un proveedor.\n        \n- **Notas:**\n    \n    - Cada solicitud de este folder debe incluir el token JWT en la cabecera para la autenticación.\n        \n    - Los parámetros de consulta permiten la paginación y el filtrado, facilitando la gestión de grandes volúmenes de datos."
+		},
+		{
+			"name": "Screening",
+			"item": [
+				{
+					"name": "Get Screening",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/screening?EntityName=Micro",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"screening"
+							],
+							"query": [
+								{
+									"key": "EntityName",
+									"value": "Micro"
+								}
+							]
+						},
+						"description": "# GET Request to /screening/Micro\n\nThis GET request is used to retrieve data from the \"/screening/Micro\" endpoint. As it is a GET request, there is no request body involved, but query parameters can be used to specify the desired resource.\n\n### Response\n\n- Status: 200\n    \n- Content-Type: application/json\n    \n- { \"sources\": \\[ { \"sourceName\": \"\", \"numberOfHits\": 0, \"results\": \\[ { \"source\": \"\", \"name\": \"\", \"jurisdiction\": \"\", \"linkedTo\": \"\", \"dataFrom\": \"\", \"firmName\": null, \"country\": null, \"fromDate\": null, \"address\": null, \"toDate\": null, \"grounds\": null, \"name_f3\": null, \"addres_f3\": null, \"type\": null, \"programs\": null, \"list\": null, \"score\": null } \\] } \\]}\n    \n\nThis response contains an array of \"sources\" with details such as \"sourceName\" and \"numberOfHits\". Each \"source\" includes information like \"source\", \"name\", \"jurisdiction\", \"linkedTo\", and more.\n\nA successful GET response will have a `200 OK` status, and should include some kind of response body - for example, HTML web content or JSON data."
+					},
+					"response": []
+				}
+			],
+			"description": "Esta carpeta contiene el endpoint encargado de realizar el \"web scraping\" para la búsqueda en listas de alto riesgo.\n\n- **Propósito:** Ejecutar búsquedas automáticas en fuentes externas (por ejemplo, ICIJ Offshore Leaks, OFAC Sanctions List y World Bank Sanctioned Firms) para identificar entidades en listas de alto riesgo.\n    \n- **Ejemplo de Endpoint:**\n    \n    - **GET /api/screening?EntityName={entityName}:** Recibe como parámetro el nombre de la entidad a consultar y retorna un JSON con los resultados extraídos de las diversas fuentes.\n        \n- **Notas:**\n    \n    - La ruta está protegida por autenticación (JWT) y por un límite de 20 llamadas por minuto (rate limiting) para evitar abusos.\n        \n    - En los resultados se incluyen el número de \"hits\" y un arreglo con los resultados de cada fuente.\n        \n    - Es importante que el cliente incluya el token JWT en la cabecera `Authorization: Bearer {{jwtToken}}`."
+		},
+		{
+			"name": "Account",
+			"item": [
+				{
+					"name": "Login",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"userName\": \"danielrp551\",\r\n    \"password\": \"26deJULIOjulio*\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/account/login",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"account",
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Register",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"userName\": \"danielrp551\",\r\n    \"email\": \"daniel.erp.26@gmail.com\",\r\n    \"password\": \"26deJULIOjulio*\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/account/register",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"account",
+								"register"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"description": "Esta carpeta contiene los endpoints relacionados con la autenticación de usuarios.\n\n**Propósito**: Permitir a los usuarios autenticarse y obtener un token JWT que se utilizará para autorizar el acceso a las demás rutas protegidas del API.\n\n**Ejemplo de Endpoint**:\nPOST /api/account/login: Recibe las credenciales del usuario (por ejemplo, username y password) y, si son válidas, retorna un token JWT.\n\n**Notas**:\nLa autenticación JWT se usa para proteger los demás endpoints, por lo que cada solicitud en los folders de Proveedores y Screening incluirá este token en la cabecera Authorization.\n",
+			"auth": {
+				"type": "noauth"
+			},
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"type": "text/javascript",
+						"packages": {},
+						"exec": [
+							""
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"packages": {},
+						"exec": [
+							""
+						]
+					}
+				}
+			]
+		}
+	],
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImRhbmllbC5lcnAuMjZAZ21haWwuY29tIiwiZ2l2ZW5fbmFtZSI6ImRhbmllbHJwNTUxIiwibmJmIjoxNzM2NjY4MzMyLCJleHAiOjE3MzcyNzMxMzIsImlhdCI6MTczNjY2ODMzMiwiaXNzIjoiaHR0cHM6Ly9wcnVlYmEtZXktYXBwLWJhY2stZmZmeGNzZjlodWM0Yjhjbi5icmF6aWxzb3V0aC0wMS5henVyZXdlYnNpdGVzLm5ldCIsImF1ZCI6Imh0dHBzOi8vcHJ1ZWJhLWV5LWFwcC1iYWNrLWZmZnhjc2Y5aHVjNGI4Y24uYnJhemlsc291dGgtMDEuYXp1cmV3ZWJzaXRlcy5uZXQifQ.zCHS4s-lGpw6vnPzNWulurizb5EAjhWuQfMeeuuGnH7UvBY907XmUhLniHdrOIzrLQvPSIg1dIccj1ghEVyl3A",
+				"type": "string"
+			}
+		]
+	},
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "id",
+			"value": "7"
+		},
+		{
+			"key": "base_url",
+			"value": "http://localhost:5098/api"
+		}
+	]
+}
