@@ -4,7 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity;
 
-namespace SISTEMA_VACACIONES.Identity
+namespace sistema_vacaciones_back.Identity
 {
     public class SpanishIdentityErrorDescriber : IdentityErrorDescriber
     {

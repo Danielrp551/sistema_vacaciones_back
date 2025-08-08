@@ -24,9 +24,19 @@ namespace SISTEMA_VACACIONES.DTOs.Account
 
         [Required(ErrorMessage = "El nombre es obligatorio.")]
         [MaxLength(100, ErrorMessage = "El nombre no puede tener más de 100 caracteres.")]
-        public string Nombre { get; set; }
-        
+        public string Nombres { get; set; }
+
+        [Required(ErrorMessage = "El apellido paterno es obligatorio.")]
+        [MaxLength(100, ErrorMessage = "El apellido paterno no puede tener más de 100 caracteres.")]
+        public string ApellidoPaterno { get; set; }
+
+        [Required(ErrorMessage = "El apellido materno es obligatorio.")]
+        [MaxLength(100, ErrorMessage = "El apellido materno no puede tener más de 100 caracteres.")]
+        public string ApellidoMaterno { get; set; }
+
         [Required(ErrorMessage = "La fecha de ingreso es obligatoria.")]
         public DateTime FechaIngreso { get; set; }
+        
+        public bool Extranjero { get; set; }
     }
 }

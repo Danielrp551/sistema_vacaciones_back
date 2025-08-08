@@ -6,8 +6,8 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SISTEMA_VACACIONES.DTOs.Account;
-using SISTEMA_VACACIONES.Interfaces;
 using sistema_vacaciones_back.Interfaces;
+using sistema_vacaciones_back.Mappers;
 using sistema_vacaciones_back.Models;
 
 namespace SISTEMA_VACACIONES.Controllers
@@ -51,7 +51,7 @@ namespace SISTEMA_VACACIONES.Controllers
 
             var roles = await _usuarioRepository.GetUserRolesAsync(user);
 
-            var allowedRoutes = await _usuarioRepository.GetUserRoutesAsync(user);
+            var permisos = await _usuarioRepository.GetUserPermissionsAsync(user);
 
             return Ok(new NewUserDto
             {
@@ -59,9 +59,9 @@ namespace SISTEMA_VACACIONES.Controllers
                 UserName = user.UserName,
                 Email = user.Email,
                 Token = _tokenService.CreateToken(user),
-                NombreCompleto = user.Persona.Nombre,
+                Persona = user.Persona.ToPersonaDto(),
                 Roles = roles.ToList(),
-                AllowedRoutes = allowedRoutes
+                Permisos = permisos
             });
 
         }
@@ -76,9 +76,13 @@ namespace SISTEMA_VACACIONES.Controllers
 
                 var persona = new Persona
                 {
-                    Nombre = registerDto.Nombre,
+                    Id = Guid.NewGuid().ToString(),
+                    Nombres = registerDto.Nombres,
+                    ApellidoPaterno = registerDto.ApellidoPaterno,
+                    ApellidoMaterno = registerDto.ApellidoMaterno,
                     Dni = registerDto.Dni,
                     FechaIngreso = registerDto.FechaIngreso,
+                    Extranjero = registerDto.Extranjero
                 };
 
                 await _personaRepository.AddAsync(persona);
@@ -88,7 +92,11 @@ namespace SISTEMA_VACACIONES.Controllers
                 {
                     UserName = registerDto.Username,
                     Email = registerDto.Email,
-                    PersonaId = persona.Id
+                    PersonaId = persona.Id,
+                    CreatedBy = "System",
+                    CreatedOn = DateTime.UtcNow,
+                    UpdatedBy = "System",
+                    UpdatedOn = DateTime.UtcNow
                 };
 
                 var result = await _signInManager.UserManager.CreateAsync(appUser, registerDto.Password);
@@ -106,14 +114,17 @@ namespace SISTEMA_VACACIONES.Controllers
                 if (!roleAdded)
                     return StatusCode(500, "No se pudo asignar el rol");
 
+                var permisos = await _usuarioRepository.GetUserPermissionsAsync(appUser);
+
                 return Ok(new NewUserDto
                 {
                     Id = appUser.Id,
                     UserName = appUser.UserName,
                     Email = appUser.Email,
                     Token = _tokenService.CreateToken(appUser),
-                    NombreCompleto = persona.Nombre,
-                    Roles = new List<string> { "User" }
+                    Persona = persona.ToPersonaDto(),
+                    Roles = new List<string> { "User" },
+                    Permisos = permisos
                 });
             }
             catch (Exception ex)

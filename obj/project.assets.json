@@ -7296,11 +7296,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\Danielrp551\\Documents\\SISTEMA_MARSH_VACACIONES\\sistema_vacaciones_back\\SISTEMA_VACACIONES.csproj",
+      "projectUniqueName": "C:\\Users\\Danielrp551\\OneDrive\\Documentos\\Repositorios\\SISTEMA VACACIONES\\sistema_vacaciones_back\\SISTEMA_VACACIONES.csproj",
       "projectName": "SISTEMA_VACACIONES",
-      "projectPath": "C:\\Users\\Danielrp551\\Documents\\SISTEMA_MARSH_VACACIONES\\sistema_vacaciones_back\\SISTEMA_VACACIONES.csproj",
+      "projectPath": "C:\\Users\\Danielrp551\\OneDrive\\Documentos\\Repositorios\\SISTEMA VACACIONES\\sistema_vacaciones_back\\SISTEMA_VACACIONES.csproj",
       "packagesPath": "C:\\Users\\Danielrp551\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\Danielrp551\\Documents\\SISTEMA_MARSH_VACACIONES\\sistema_vacaciones_back\\obj\\",
+      "outputPath": "C:\\Users\\Danielrp551\\OneDrive\\Documentos\\Repositorios\\SISTEMA VACACIONES\\sistema_vacaciones_back\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "C:\\Users\\Danielrp551\\AppData\\Roaming\\NuGet\\NuGet.Config",

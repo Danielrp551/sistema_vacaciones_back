@@ -9,9 +9,7 @@ namespace sistema_vacaciones_back.Models
 {
     public class RolPermiso
     {
-        [Key]
-        public int Id { get; set; }
-
+        
         [Required]
         public string RolId { get; set; }
 
@@ -19,7 +17,7 @@ namespace sistema_vacaciones_back.Models
         public Rol Rol { get; set; }
 
         [Required]
-        public int PermisoId { get; set; }
+        public string PermisoId { get; set; }
 
         [ForeignKey("PermisoId")]
         public Permiso Permiso { get; set; }

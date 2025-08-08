@@ -20,17 +20,12 @@ namespace sistema_vacaciones_back.Mappers
                 NumeroPersonas = rol.NumeroPersonas,
                 Estado = rol.Estado,
                 // Audit fields
-                CreatedBy = rol.CreatedBy,
+                CreatedBy = rol.CreatedBy.ToString(),
                 CreatedOn = rol.CreatedOn,
-                UpdatedBy = rol.UpdatedBy,
-                UpdatedOn = rol.UpdatedOn,
-                isDeleted = rol.isDeleted,
-                Permisos = rol.RolPermisos.Select(rp => new PermisoDto
-                {
-                    Id = rp.Permiso.Id,
-                    NombreRuta = rp.Permiso.NombreRuta,
-                    Descripcion = rp.Permiso.Descripcion
-                }).ToList()
+                UpdatedBy = rol.UpdatedBy.ToString(),
+                UpdatedOn = (DateTime)rol.UpdatedOn,
+                isDeleted = rol.IsDeleted,
+                Permisos = null
             };
         }
 
@@ -49,7 +44,7 @@ namespace sistema_vacaciones_back.Mappers
                 // Audit fields
                 CreatedOn = DateTime.UtcNow,
                 UpdatedOn = DateTime.UtcNow,
-                isDeleted = false
+                IsDeleted = false
             };
         }
     }

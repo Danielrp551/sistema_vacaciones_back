@@ -13,18 +13,15 @@ namespace sistema_vacaciones_back.Mappers
         {
             return new UsuarioDto
             {
-                IdPersona = usuario.PersonaId,
+                IdPersona = usuario.PersonaId.GetHashCode(),
                 Id = usuario.Id,
                 Dni = usuario.Persona.Dni,
-                Nombre = usuario.Persona.Nombre,
+                Nombre = usuario.Persona.Nombres,
                 FechaIngreso = usuario.Persona.FechaIngreso,
                 Extranjero = usuario.Persona.Extranjero,
-                NombreJefe = usuario.Jefe?.Persona?.Nombre,
+                NombreJefe = usuario.Jefe?.Persona?.Nombres,
                 NombreArea = "",
-                Roles = usuario.UsuarioRoles?.Select(ur => ur.Rol?.Name)
-                                   .Where(name => !string.IsNullOrEmpty(name))
-                                   .ToList() 
-                        ?? new List<string>()
+                Roles = null
             };
         }
 

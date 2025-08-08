@@ -5,8 +5,10 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using sistema_vacaciones_back.DTOs.HistorialVacaciones;
+using sistema_vacaciones_back.Extensions;
 using sistema_vacaciones_back.Interfaces;
 using sistema_vacaciones_back.Models;
+using sistema_vacaciones_back.Security;
 
 namespace sistema_vacaciones_back.Controllers
 {
@@ -17,54 +19,71 @@ namespace sistema_vacaciones_back.Controllers
     {
         private readonly IUsuarioRepository _usuarioRepository;
         private readonly ISolicitudVacacionesRepository _solicitudVacacionesRepository;
+        private readonly ILogger<HistorialVacacionesController> _logger;
 
         public HistorialVacacionesController(
             IUsuarioRepository usuarioRepository,
-            ISolicitudVacacionesRepository solicitudVacacionesRepository)
+            ISolicitudVacacionesRepository solicitudVacacionesRepository,
+            ILogger<HistorialVacacionesController> logger)
         {
             _usuarioRepository = usuarioRepository;
             _solicitudVacacionesRepository = solicitudVacacionesRepository;
+            _logger = logger;
         }
 
-        [HttpGet("{usuarioId}")]
-        public async Task<IActionResult> ObtenerHistorialVacaciones(string usuarioId)
+        [HttpGet]
+        [OwnerOnly] // Atributo de seguridad personalizado
+        public async Task<IActionResult> ObtenerHistorialVacaciones()
         {
-            var usuario = await _usuarioRepository.GetByIdAsync(usuarioId);
-            if (usuario == null)
-                return NotFound("Usuario no encontrado");
-
-            //var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
-            //System.Console.WriteLine("USER ID: {0}", userId);
-            //if (string.IsNullOrEmpty(userId))
-            //    return Unauthorized("Usuario no autorizado");
-
-            //var usuario = await _usuarioRepository.GetByIdAsync(userId);
-            //if (usuario == null)
-            //    return NotFound("Usuario no encontrado");
-
-            DateTime fechaIngreso = usuario.Persona.FechaIngreso;
-            DateTime fechaActual = DateTime.Today.AddDays(1).AddTicks(-1); 
-            System.Console.WriteLine("FECHA ACTUAL: {0}", fechaActual);
-            System.Console.WriteLine("FECHA INGRESO: {0}", fechaIngreso);
-
-            // 1️⃣ Generar lista de períodos de vacaciones por año desde la fecha de ingreso hasta hoy
-            var historial = GenerarPeriodosVacaciones(fechaIngreso, fechaActual);
-
-            System.Console.WriteLine("HISTORIAL: {0}", historial);
-
-            // 2️⃣ Obtener solicitudes de vacaciones aprobadas del usuario
-            var solicitudes = await _solicitudVacacionesRepository.ObtenerSolicitudesAprobadasPendientes(usuarioId);
-
-            // 3️⃣ Restar días gastados según el orden correcto
-            AplicarDeducciones(historial, solicitudes);
-
-            var response = new
+            try
             {
-                FechaIngreso = fechaIngreso, // Formato ISO
-                Historial = historial
-            };
+                // Obtener el userId del token JWT con validación robusta
+                var userId = User.GetUserId();
+                if (string.IsNullOrEmpty(userId))
+                {
+                    _logger.LogWarning("Intento de acceso a historial con token inválido");
+                    return Unauthorized("Token inválido - Usuario no identificado");
+                }
 
-            return Ok(response);
+                _logger.LogInformation("Usuario {UserId} consultando historial de vacaciones", userId);
+
+                var usuario = await _usuarioRepository.GetByIdAsync(userId);
+                if (usuario == null)
+                {
+                    _logger.LogWarning("Usuario {UserId} no encontrado en la base de datos", userId);
+                    return NotFound("Usuario no encontrado");
+                }
+
+                DateTime fechaIngreso = usuario.Persona.FechaIngreso;
+                DateTime fechaActual = DateTime.Today.AddDays(1).AddTicks(-1); 
+                
+                _logger.LogInformation("Procesando historial para usuario {UserId} desde {FechaIngreso} hasta {FechaActual}", 
+                    userId, fechaIngreso, fechaActual);
+
+                // 1️⃣ Generar lista de períodos de vacaciones por año desde la fecha de ingreso hasta hoy
+                var historial = GenerarPeriodosVacaciones(fechaIngreso, fechaActual);
+
+                // 2️⃣ Obtener solicitudes de vacaciones aprobadas del usuario
+                var solicitudes = await _solicitudVacacionesRepository.ObtenerSolicitudesAprobadasPendientes(userId);
+
+                // 3️⃣ Restar días gastados según el orden correcto
+                AplicarDeducciones(historial, solicitudes);
+
+                var response = new
+                {
+                    UsuarioId = userId,
+                    FechaIngreso = fechaIngreso,
+                    Historial = historial
+                };
+
+                _logger.LogInformation("Historial de vacaciones generado exitosamente para usuario {UserId}", userId);
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error al obtener historial de vacaciones para usuario {UserId}", User.GetUserId());
+                return StatusCode(500, "Error interno del servidor");
+            }
         }
 
         private List<HistorialVacacionesDto> GenerarPeriodosVacaciones(DateTime fechaIngreso, DateTime fechaActual)

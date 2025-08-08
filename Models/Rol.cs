@@ -14,12 +14,10 @@ namespace sistema_vacaciones_back.Models
 
         public string Estado { get; set; } // "activo", "inactivo"
         // Audit fields
-        public string CreatedBy { get; set; }
+        public string  CreatedBy { get; set; }
         public DateTime CreatedOn { get; set; }
-        public string UpdatedBy { get; set; }
-        public DateTime UpdatedOn { get; set; }
-        public bool isDeleted { get; set; }
-        public ICollection<UsuarioRol> UsuarioRoles { get; set; }
-        public ICollection<RolPermiso> RolPermisos { get; set; }
+        public string? UpdatedBy { get; set; }
+        public DateTime? UpdatedOn { get; set; }
+        public bool IsDeleted { get; set; }
     }
 }

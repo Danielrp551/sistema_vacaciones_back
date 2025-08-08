@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
-using SISTEMA_VACACIONES.Data;
+using sistema_vacaciones_back.Data;
 using sistema_vacaciones_back.DTOs.HistorialVacaciones;
 using sistema_vacaciones_back.Interfaces;
 
@@ -22,7 +22,7 @@ namespace sistema_vacaciones_back.Repository
         {
             // ✅ Se cambia UsuarioId por PersonaId
             var diasTomados = await _context.Vacaciones 
-                .Where(v => v.PersonaId == personaId)
+                .Where(v => v.PersonaId.GetHashCode() == personaId)
                 .SumAsync(v => v.DiasLibresDisponibles + v.DiasBloqueDisponibles); // Sumamos ambos tipos de días
 
             int diasTrabajados = (fechaActual - fechaIngreso).Days;

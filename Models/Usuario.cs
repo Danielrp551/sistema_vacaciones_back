@@ -10,21 +10,20 @@ namespace sistema_vacaciones_back.Models
 {
     public class Usuario : IdentityUser
     {
-        public string CreatedBy { get; set; }
+        public string  CreatedBy { get; set; }
         public DateTime CreatedOn { get; set; }
-        public string UpdatedBy { get; set; }
-        public DateTime UpdatedOn { get; set; }
-        public bool isDeleted { get; set; }
+        public string? UpdatedBy { get; set; }
+        public DateTime? UpdatedOn { get; set; }
+        public bool IsDeleted { get; set; }
 
         [Required]
-        public int PersonaId { get; set; }
+        public string PersonaId { get; set; }
 
         [ForeignKey("PersonaId")]
         public Persona Persona { get; set; }
 
-        public ICollection<UsuarioRol> UsuarioRoles { get; set; }
         public string? JefeId { get; set; }
-        
+
         [ForeignKey("JefeId")]
         public Usuario? Jefe { get; set; }
 

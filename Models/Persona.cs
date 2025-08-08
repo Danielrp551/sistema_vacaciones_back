@@ -7,10 +7,9 @@ using System.Threading.Tasks;
 
 namespace sistema_vacaciones_back.Models
 {
-    [Table("Persona")]
     public class Persona
     {
-        public int Id { get; set; }
+        public string  Id { get; set; }
 
         [Required]
         [MaxLength(15)]
@@ -18,14 +17,20 @@ namespace sistema_vacaciones_back.Models
 
         [Required]
         [MaxLength(100)]
-        public string Nombre { get; set; }
+        public string Nombres { get; set; }
+
+        [Required]
+        [MaxLength(100)]
+        public string ApellidoPaterno { get; set; }
+
+        [Required]
+        [MaxLength(100)]
+        public string ApellidoMaterno { get; set; }
 
         [Required]
         public DateTime FechaIngreso { get; set; }
 
         public Boolean Extranjero { get; set; }
-
-        public Usuario Usuario { get; set; }
 
     }
 }

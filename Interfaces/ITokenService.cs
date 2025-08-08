@@ -4,7 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity;
 
-namespace SISTEMA_VACACIONES.Interfaces
+namespace sistema_vacaciones_back.Interfaces
 {
     public interface ITokenService
     {

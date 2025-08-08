@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-using SISTEMA_VACACIONES.Data;
+using sistema_vacaciones_back.Data;
 
 #nullable disable
 
@@ -164,108 +164,23 @@ namespace SISTEMA_VACACIONES.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
-            modelBuilder.Entity("SISTEMA_VACACIONES.Models.Proveedor", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("CorreoElectronico")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("DireccionFisica")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<decimal>("FacturacionAnualUSD")
-                        .HasColumnType("decimal(18, 2)");
-
-                    b.Property<DateTime>("FechaCreacion")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime>("FechaUltimaEdicion")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("IdentificacionTributaria")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("NombreComercial")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("NumeroTelefonico")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Pais")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("RazonSocial")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("SitioWeb")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Proveedores");
-                });
-
-            modelBuilder.Entity("sistema_vacaciones_back.Models.AprobacionVacaciones", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("AprobadorId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("Comentario")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Estado")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime?>("FechaAprobacion")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("SolicitudId")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("AprobadorId");
-
-                    b.HasIndex("SolicitudId");
-
-                    b.ToTable("AprobacionesVacaciones");
-                });
-
             modelBuilder.Entity("sistema_vacaciones_back.Models.Permiso", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                    b.Property<string>("CreatedBy")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreatedOn")
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("Descripcion")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("NombreRuta")
+                    b.Property<string>("Nombre")
                         .IsRequired()
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
@@ -279,59 +194,22 @@ namespace SISTEMA_VACACIONES.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Permisos");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            Descripcion = "",
-                            NombreRuta = "/vacaciones"
-                        },
-                        new
-                        {
-                            Id = 2,
-                            Descripcion = "",
-                            NombreRuta = "/historial-vacaciones"
-                        },
-                        new
-                        {
-                            Id = 3,
-                            Descripcion = "",
-                            NombreRuta = "/mis-solicitudes-vacaciones"
-                        },
-                        new
-                        {
-                            Id = 4,
-                            Descripcion = "",
-                            NombreRuta = "/aprobaciones"
-                        },
-                        new
-                        {
-                            Id = 5,
-                            Descripcion = "",
-                            NombreRuta = "/administracion"
-                        },
-                        new
-                        {
-                            Id = 6,
-                            Descripcion = "",
-                            NombreRuta = "/roles-permisos"
-                        },
-                        new
-                        {
-                            Id = 7,
-                            Descripcion = "",
-                            NombreRuta = "/usuarios-jerarquias"
-                        });
                 });
 
             modelBuilder.Entity("sistema_vacaciones_back.Models.Persona", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                    b.Property<string>("ApellidoMaterno")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("ApellidoPaterno")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
 
                     b.Property<string>("Dni")
                         .IsRequired()
@@ -344,120 +222,79 @@ namespace SISTEMA_VACACIONES.Migrations
                     b.Property<DateTime>("FechaIngreso")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("Nombre")
+                    b.Property<string>("Nombres")
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
                     b.HasKey("Id");
 
-                    b.ToTable("Persona");
+                    b.ToTable("Personas");
                 });
 
             modelBuilder.Entity("sistema_vacaciones_back.Models.Restriccion", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<bool>("Activo")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("AdminId")
-                        .IsRequired()
+                    b.Property<string>("Id")
                         .HasColumnType("nvarchar(450)");
 
-                    b.Property<DateTime>("CreadoEl")
+                    b.Property<string>("CreatedBy")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreatedOn")
                         .HasColumnType("datetime2");
 
                     b.Property<int>("FechaLimiteMes")
                         .HasColumnType("int");
 
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("UpdatedOn")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("UsuarioId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
                     b.HasKey("Id");
 
-                    b.HasIndex("AdminId");
+                    b.HasIndex("UsuarioId");
 
                     b.ToTable("Restricciones");
                 });
 
             modelBuilder.Entity("sistema_vacaciones_back.Models.RolPermiso", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("PermisoId")
-                        .HasColumnType("int");
-
                     b.Property<string>("RolId")
-                        .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
-                    b.HasKey("Id");
+                    b.Property<string>("PermisoId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("RolId", "PermisoId");
 
                     b.HasIndex("PermisoId");
 
-                    b.HasIndex("RolId", "PermisoId")
-                        .IsUnique();
-
                     b.ToTable("RolPermisos");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            PermisoId = 1,
-                            RolId = "032feba5-28c3-4dbe-a7d0-260767036d04"
-                        },
-                        new
-                        {
-                            Id = 2,
-                            PermisoId = 2,
-                            RolId = "032feba5-28c3-4dbe-a7d0-260767036d04"
-                        },
-                        new
-                        {
-                            Id = 3,
-                            PermisoId = 3,
-                            RolId = "032feba5-28c3-4dbe-a7d0-260767036d04"
-                        },
-                        new
-                        {
-                            Id = 4,
-                            PermisoId = 4,
-                            RolId = "032feba5-28c3-4dbe-a7d0-260767036d04"
-                        },
-                        new
-                        {
-                            Id = 5,
-                            PermisoId = 5,
-                            RolId = "032feba5-28c3-4dbe-a7d0-260767036d04"
-                        },
-                        new
-                        {
-                            Id = 6,
-                            PermisoId = 6,
-                            RolId = "032feba5-28c3-4dbe-a7d0-260767036d04"
-                        },
-                        new
-                        {
-                            Id = 7,
-                            PermisoId = 7,
-                            RolId = "032feba5-28c3-4dbe-a7d0-260767036d04"
-                        });
                 });
 
             modelBuilder.Entity("sistema_vacaciones_back.Models.SolicitudVacaciones", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                    b.Property<string>("AprobadorId")
+                        .HasMaxLength(450)
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("Comentarios")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
 
                     b.Property<int>("DiasFinde")
                         .HasColumnType("int");
@@ -467,7 +304,11 @@ namespace SISTEMA_VACACIONES.Migrations
 
                     b.Property<string>("Estado")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<DateTime?>("FechaAprobacion")
+                        .HasColumnType("datetime2");
 
                     b.Property<DateTime>("FechaFin")
                         .HasColumnType("datetime2");
@@ -478,20 +319,29 @@ namespace SISTEMA_VACACIONES.Migrations
                     b.Property<DateTime>("FechaSolicitud")
                         .HasColumnType("datetime2");
 
+                    b.Property<string>("Observaciones")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
                     b.Property<int>("Periodo")
                         .HasColumnType("int");
 
+                    b.Property<string>("SolicitanteId")
+                        .IsRequired()
+                        .HasMaxLength(450)
+                        .HasColumnType("nvarchar(450)");
+
                     b.Property<string>("TipoVacaciones")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("UsuarioId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("UsuarioId");
+                    b.HasIndex("AprobadorId");
+
+                    b.HasIndex("SolicitanteId");
 
                     b.ToTable("SolicitudesVacaciones");
                 });
@@ -522,6 +372,9 @@ namespace SISTEMA_VACACIONES.Migrations
                     b.Property<bool>("EmailConfirmed")
                         .HasColumnType("bit");
 
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
                     b.Property<string>("JefeId")
                         .HasColumnType("nvarchar(450)");
 
@@ -542,8 +395,9 @@ namespace SISTEMA_VACACIONES.Migrations
                     b.Property<string>("PasswordHash")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("PersonaId")
-                        .HasColumnType("int");
+                    b.Property<string>("PersonaId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("PhoneNumber")
                         .HasColumnType("nvarchar(max)");
@@ -558,18 +412,14 @@ namespace SISTEMA_VACACIONES.Migrations
                         .HasColumnType("bit");
 
                     b.Property<string>("UpdatedBy")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<DateTime>("UpdatedOn")
+                    b.Property<DateTime?>("UpdatedOn")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("UserName")
                         .HasMaxLength(256)
                         .HasColumnType("nvarchar(256)");
-
-                    b.Property<bool>("isDeleted")
-                        .HasColumnType("bit");
 
                     b.HasKey("Id");
 
@@ -583,36 +433,9 @@ namespace SISTEMA_VACACIONES.Migrations
                         .HasDatabaseName("UserNameIndex")
                         .HasFilter("[NormalizedUserName] IS NOT NULL");
 
-                    b.HasIndex("PersonaId")
-                        .IsUnique();
+                    b.HasIndex("PersonaId");
 
                     b.ToTable("AspNetUsers", (string)null);
-                });
-
-            modelBuilder.Entity("sistema_vacaciones_back.Models.UsuarioRol", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("RolId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("UsuarioId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("RolId");
-
-                    b.HasIndex("UsuarioId", "RolId")
-                        .IsUnique();
-
-                    b.ToTable("UsuarioRoles");
                 });
 
             modelBuilder.Entity("sistema_vacaciones_back.Models.Vacaciones", b =>
@@ -633,8 +456,9 @@ namespace SISTEMA_VACACIONES.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("PersonaId")
-                        .HasColumnType("int");
+                    b.Property<string>("PersonaId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
 
                     b.HasKey("Id");
 
@@ -662,36 +486,19 @@ namespace SISTEMA_VACACIONES.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
                     b.Property<int>("NumeroPersonas")
                         .HasColumnType("int");
 
                     b.Property<string>("UpdatedBy")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<DateTime>("UpdatedOn")
+                    b.Property<DateTime?>("UpdatedOn")
                         .HasColumnType("datetime2");
 
-                    b.Property<bool>("isDeleted")
-                        .HasColumnType("bit");
-
                     b.HasDiscriminator().HasValue("Rol");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = "032feba5-28c3-4dbe-a7d0-260767036d04",
-                            Name = "User",
-                            NormalizedName = "USER",
-                            CreatedBy = "Sistema",
-                            CreatedOn = new DateTime(2025, 2, 22, 0, 0, 0, 0, DateTimeKind.Utc),
-                            Descripcion = "Rol por defecto",
-                            Estado = "activo",
-                            NumeroPersonas = 0,
-                            UpdatedBy = "Sistema",
-                            UpdatedOn = new DateTime(2025, 2, 22, 18, 30, 0, 0, DateTimeKind.Utc),
-                            isDeleted = false
-                        });
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -745,46 +552,27 @@ namespace SISTEMA_VACACIONES.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("sistema_vacaciones_back.Models.AprobacionVacaciones", b =>
-                {
-                    b.HasOne("sistema_vacaciones_back.Models.Usuario", "Aprobador")
-                        .WithMany()
-                        .HasForeignKey("AprobadorId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-
-                    b.HasOne("sistema_vacaciones_back.Models.SolicitudVacaciones", "Solicitud")
-                        .WithMany()
-                        .HasForeignKey("SolicitudId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-
-                    b.Navigation("Aprobador");
-
-                    b.Navigation("Solicitud");
-                });
-
             modelBuilder.Entity("sistema_vacaciones_back.Models.Restriccion", b =>
                 {
-                    b.HasOne("sistema_vacaciones_back.Models.Usuario", "Admin")
+                    b.HasOne("sistema_vacaciones_back.Models.Usuario", "Usuario")
                         .WithMany()
-                        .HasForeignKey("AdminId")
+                        .HasForeignKey("UsuarioId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Admin");
+                    b.Navigation("Usuario");
                 });
 
             modelBuilder.Entity("sistema_vacaciones_back.Models.RolPermiso", b =>
                 {
                     b.HasOne("sistema_vacaciones_back.Models.Permiso", "Permiso")
-                        .WithMany("RolPermisos")
+                        .WithMany()
                         .HasForeignKey("PermisoId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("sistema_vacaciones_back.Models.Rol", "Rol")
-                        .WithMany("RolPermisos")
+                        .WithMany()
                         .HasForeignKey("RolId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -796,13 +584,19 @@ namespace SISTEMA_VACACIONES.Migrations
 
             modelBuilder.Entity("sistema_vacaciones_back.Models.SolicitudVacaciones", b =>
                 {
-                    b.HasOne("sistema_vacaciones_back.Models.Usuario", "Usuario")
+                    b.HasOne("sistema_vacaciones_back.Models.Usuario", "Aprobador")
                         .WithMany()
-                        .HasForeignKey("UsuarioId")
+                        .HasForeignKey("AprobadorId");
+
+                    b.HasOne("sistema_vacaciones_back.Models.Usuario", "Solicitante")
+                        .WithMany()
+                        .HasForeignKey("SolicitanteId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Usuario");
+                    b.Navigation("Aprobador");
+
+                    b.Navigation("Solicitante");
                 });
 
             modelBuilder.Entity("sistema_vacaciones_back.Models.Usuario", b =>
@@ -813,33 +607,14 @@ namespace SISTEMA_VACACIONES.Migrations
                         .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("sistema_vacaciones_back.Models.Persona", "Persona")
-                        .WithOne("Usuario")
-                        .HasForeignKey("sistema_vacaciones_back.Models.Usuario", "PersonaId")
+                        .WithMany()
+                        .HasForeignKey("PersonaId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Jefe");
 
                     b.Navigation("Persona");
-                });
-
-            modelBuilder.Entity("sistema_vacaciones_back.Models.UsuarioRol", b =>
-                {
-                    b.HasOne("sistema_vacaciones_back.Models.Rol", "Rol")
-                        .WithMany("UsuarioRoles")
-                        .HasForeignKey("RolId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("sistema_vacaciones_back.Models.Usuario", "Usuario")
-                        .WithMany("UsuarioRoles")
-                        .HasForeignKey("UsuarioId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Rol");
-
-                    b.Navigation("Usuario");
                 });
 
             modelBuilder.Entity("sistema_vacaciones_back.Models.Vacaciones", b =>
@@ -853,29 +628,9 @@ namespace SISTEMA_VACACIONES.Migrations
                     b.Navigation("Persona");
                 });
 
-            modelBuilder.Entity("sistema_vacaciones_back.Models.Permiso", b =>
-                {
-                    b.Navigation("RolPermisos");
-                });
-
-            modelBuilder.Entity("sistema_vacaciones_back.Models.Persona", b =>
-                {
-                    b.Navigation("Usuario")
-                        .IsRequired();
-                });
-
             modelBuilder.Entity("sistema_vacaciones_back.Models.Usuario", b =>
                 {
                     b.Navigation("Subordinados");
-
-                    b.Navigation("UsuarioRoles");
-                });
-
-            modelBuilder.Entity("sistema_vacaciones_back.Models.Rol", b =>
-                {
-                    b.Navigation("RolPermisos");
-
-                    b.Navigation("UsuarioRoles");
                 });
 #pragma warning restore 612, 618
         }

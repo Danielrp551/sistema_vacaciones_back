@@ -10,17 +10,22 @@ namespace sistema_vacaciones_back.Interfaces
 {
     public interface  IUsuarioRepository
     {
-        Task<Usuario> GetByIdAsync(string id);
+        Task<Usuario?> GetByIdAsync(string id);
         Task<IEnumerable<Usuario>> GetAllAsync();
         Task AddAsync(Usuario user);
         Task UpdateAsync(Usuario user);
         Task DeleteAsync(Usuario user);
         Task<bool> SaveChangesAsync();
-        Task<Usuario> GetByUsernameAsync(string username);
+        Task<Usuario?> GetByUsernameAsync(string username);
         Task<IList<string>> GetUserRolesAsync(Usuario user);
-        Task<List<string>> GetUserRoutesAsync(Usuario usuario);
+        Task<List<string>> GetUserPermissionsAsync(Usuario usuario);
         Task<bool> AddUserToRoleAsync(Usuario user, string role);     
 
-        Task<(int, List<UsuarioDto>)> GetUsuarios(UsuariosQueryObject queryObject, string usuarioId);   
+        Task<(int, List<UsuarioDto>)> GetUsuarios(UsuariosQueryObject queryObject, string usuarioId);
+
+        /// <summary>
+        /// Obtiene los empleados del equipo de un supervisor
+        /// </summary>
+        Task<List<Usuario>> GetEmpleadosEquipo(string supervisorId, bool incluirSubordinadosNivelN);
     }
 }

@@ -7,11 +7,11 @@ namespace sistema_vacaciones_back.DTOs.SolicitudVacaciones
 {
     public class SolicitudVacacionesDto
     {
-        public int Id { get; set; }
+        public string Id { get; set; } = string.Empty;
 
-        public string UsuarioId { get; set; }
+        public string UsuarioId { get; set; } = string.Empty;
 
-        public string TipoVacaciones { get; set; } // "libres" o "bloque"
+        public string TipoVacaciones { get; set; } = string.Empty; // "libres" o "bloque"
 
         public int DiasSolicitados { get; set; }
 
@@ -19,7 +19,7 @@ namespace sistema_vacaciones_back.DTOs.SolicitudVacaciones
 
         public DateTime FechaFin { get; set; }
 
-        public string Estado { get; set; } // "pendiente", "aprobado", "rechazado", "cancelado"
+        public string Estado { get; set; } = string.Empty; // "pendiente", "aprobado", "rechazado", "cancelado"
 
         public DateTime FechaSolicitud { get; set; }
 

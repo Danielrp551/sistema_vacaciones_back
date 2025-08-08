@@ -8,12 +8,8 @@ namespace sistema_vacaciones_back.DTOs.SolicitudVacaciones
 {
     public class CreateSolicitudRequestDto
     {
-
-        [Required(ErrorMessage = "El campo UsuarioId es requerido")]
-        public string UsuarioId { get; set; }
-
         [Required(ErrorMessage = "El campo TipoVacaciones es requerido")]
-        public string TipoVacaciones { get; set; } // "libres" o "bloque"
+        public required string TipoVacaciones { get; set; } // "libres" o "bloque"
 
         [Required(ErrorMessage = "El campo DiasSolicitados es requerido")]
         public int DiasSolicitados { get; set; }
@@ -25,6 +21,9 @@ namespace sistema_vacaciones_back.DTOs.SolicitudVacaciones
         public DateTime FechaFin { get; set; }
 
         [Required(ErrorMessage = "El campo Periodo es requerido")]
-        public int Periodo { get; set; } // 2020, 2021, 2022, etc.        
+        public int Periodo { get; set; } // 2020, 2021, 2022, etc.
+        
+        [MaxLength(1000, ErrorMessage = "Las observaciones no pueden exceder 1000 caracteres")]
+        public string Observaciones { get; set; } = string.Empty;
     }
 }

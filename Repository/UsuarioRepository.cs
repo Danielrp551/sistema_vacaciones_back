@@ -4,7 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using SISTEMA_VACACIONES.Data;
+using sistema_vacaciones_back.Data;
 using sistema_vacaciones_back.DTOs.Usuarios;
 using sistema_vacaciones_back.Helpers;
 using sistema_vacaciones_back.Interfaces;
@@ -24,7 +24,7 @@ namespace sistema_vacaciones_back.Repository
             _context = context;
         }
 
-        public async Task<Usuario> GetByUsernameAsync(string username)
+        public async Task<Usuario?> GetByUsernameAsync(string username)
         {
             return await _userManager.Users.Include(u => u.Persona).FirstOrDefaultAsync(u => u.UserName == username.ToLower());
         }
@@ -55,9 +55,9 @@ namespace sistema_vacaciones_back.Repository
             return _userManager.DeleteAsync(user);
         }
 
-        public async Task<bool> SaveChangesAsync()
+        public Task<bool> SaveChangesAsync()
         {
-            return true; // No se usa directamente un DbContext, ya que UserManager maneja los cambios
+            return Task.FromResult(true); // No se usa directamente un DbContext, ya que UserManager maneja los cambios
         }
 
         public async Task<IEnumerable<Usuario>> GetAllAsync()
@@ -65,25 +65,23 @@ namespace sistema_vacaciones_back.Repository
             return await _userManager.Users.Include(u => u.Persona).ToListAsync();
         }
 
-        public async Task<Usuario> GetByIdAsync(string id)
+        public async Task<Usuario?> GetByIdAsync(string id)
         {
             return await _userManager.Users
                 .Include(u => u.Persona)
                 .FirstOrDefaultAsync(u => u.Id == id);
         }
 
-        public async Task<List<string>> GetUserRoutesAsync(Usuario usuario)
+        public async Task<List<string>> GetUserPermissionsAsync(Usuario usuario)
         {
             var roles = await _userManager.GetRolesAsync(usuario);
 
-            // 📌 Obtener las rutas asociadas a esos roles
-            var rutas = await _context.RolPermisos
-                .Where(rp => roles.Contains(rp.Rol.Name))
-                .Select(rp => rp.Permiso.NombreRuta) // 📌 'NombreRuta' almacena la ruta
+            var permisos = await _context.RolPermisos
+                .Where(rp => rp.Rol.Name != null && roles.Contains(rp.Rol.Name))
+                .Select(rp => rp.Permiso.Nombre) 
                 .Distinct()
                 .ToListAsync();
-
-            return rutas;
+            return permisos;
         }
 
         public async Task<(int, List<UsuarioDto>)> GetUsuarios(UsuariosQueryObject queryObject, string usuarioId)
@@ -91,7 +89,7 @@ namespace sistema_vacaciones_back.Repository
             var usuarios = _context.Usuarios
                 .Include(u => u.Persona)
                 .Include(u => u.Jefe)
-                .Where(u => u.isDeleted == false)
+                .Where(u => u.IsDeleted == false)
                 .AsQueryable();
             // Filtro por busqueda de texto - barra de busqueda
             //if (!string.IsNullOrWhiteSpace(queryObject.Name))
@@ -134,6 +132,62 @@ namespace sistema_vacaciones_back.Repository
             var usuariosDtoList = usuariosList.ToUsuarioDtoList();
 
             return (totalCount, usuariosDtoList); 
+        }
+
+        /// <summary>
+        /// Obtiene los empleados del equipo de un supervisor
+        /// </summary>
+        public async Task<List<Usuario>> GetEmpleadosEquipo(string supervisorId, bool incluirSubordinadosNivelN)
+        {
+            try
+            {
+                if (incluirSubordinadosNivelN)
+                {
+                    // Obtener subordinados de manera recursiva
+                    var subordinados = new List<Usuario>();
+                    var queue = new Queue<string>();
+                    queue.Enqueue(supervisorId);
+                    var visitados = new HashSet<string>();
+
+                    while (queue.Count > 0)
+                    {
+                        var currentSupervisorId = queue.Dequeue();
+                        
+                        if (visitados.Contains(currentSupervisorId))
+                            continue;
+                            
+                        visitados.Add(currentSupervisorId);
+
+                        var empleadosDirectos = await _context.Users
+                            .Include(u => u.Persona)
+                            .Where(u => u.JefeId == currentSupervisorId && !u.IsDeleted)
+                            .ToListAsync();
+
+                        foreach (var empleado in empleadosDirectos)
+                        {
+                            if (!subordinados.Any(s => s.Id == empleado.Id))
+                            {
+                                subordinados.Add(empleado);
+                                queue.Enqueue(empleado.Id); // Para buscar sus subordinados
+                            }
+                        }
+                    }
+
+                    return subordinados;
+                }
+                else
+                {
+                    // Solo empleados directos (nivel 1)
+                    return await _context.Users
+                        .Include(u => u.Persona)
+                        .Where(u => u.JefeId == supervisorId && !u.IsDeleted)
+                        .ToListAsync();
+                }
+            }
+            catch (Exception)
+            {
+                return new List<Usuario>();
+            }
         }
     }
 }

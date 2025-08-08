@@ -6,8 +6,10 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using sistema_vacaciones_back.DTOs.Permiso;
 using sistema_vacaciones_back.DTOs.Rol;
+using sistema_vacaciones_back.Extensions;
 using sistema_vacaciones_back.Helpers;
 using sistema_vacaciones_back.Interfaces;
+using sistema_vacaciones_back.Security;
 
 namespace sistema_vacaciones_back.Controllers
 {
@@ -17,92 +19,206 @@ namespace sistema_vacaciones_back.Controllers
     public class RolController : ControllerBase
     {
         private readonly IRolRepository _rolRepository;
-
         private readonly IPersonaRepository _personaRepository;
+        private readonly ILogger<RolController> _logger;
 
         public RolController(
             IRolRepository rolRepository,
-            IPersonaRepository personaRepository
+            IPersonaRepository personaRepository,
+            ILogger<RolController> logger
         )
         {
             _rolRepository = rolRepository;
             _personaRepository = personaRepository;
+            _logger = logger;
         } 
 
-        [HttpGet, Route("get-rol-pagination/{usuarioId}")]
-        public async Task<IActionResult> GetRolPagination([FromQuery] RolesQueryObject queryObject,string usuarioId)
+        [HttpGet, Route("get-rol-pagination")]
+        [AdminOnly] // Solo administradores pueden gestionar roles
+        public async Task<IActionResult> GetRolPagination([FromQuery] RolesQueryObject queryObject)
         {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
+            try
+            {
+                if (!ModelState.IsValid)
+                    return BadRequest(ModelState);
 
-            var (total,rolesDto) = await _rolRepository.GetRolPagination(queryObject,usuarioId);
+                // Obtener el userId del token JWT
+                var userId = User.GetUserId();
+                if (string.IsNullOrEmpty(userId))
+                {
+                    _logger.LogWarning("Intento de acceso a roles con token inválido");
+                    return Unauthorized("Token inválido - Usuario no identificado");
+                }
 
-            return Ok(new {
-                Total = total,
-                Roles = rolesDto
-            });            
+                _logger.LogInformation("Administrador {UserId} consultando roles paginados", userId);
+
+                var (total, rolesDto) = await _rolRepository.GetRolPagination(queryObject, userId);
+
+                return Ok(new {
+                    Total = total,
+                    Roles = rolesDto,
+                    ConsultadoPor = userId
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error al obtener roles paginados para usuario {UserId}", User.GetUserId());
+                return StatusCode(500, "Error interno del servidor");
+            }            
         }
 
-        [HttpGet, Route("get-permisos/{usuarioId}")]
-        public async Task<IActionResult> GetPermisos(string usuarioId)
+        [HttpGet, Route("get-permisos")]
+        [AdminOnly] // Solo administradores pueden ver permisos
+        public async Task<IActionResult> GetPermisos()
         {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
+            try
+            {
+                if (!ModelState.IsValid)
+                    return BadRequest(ModelState);
 
-            var (total, permisosDto) = await _rolRepository.GetPermisos(usuarioId);
+                // Obtener el userId del token JWT
+                var userId = User.GetUserId();
+                if (string.IsNullOrEmpty(userId))
+                {
+                    _logger.LogWarning("Intento de acceso a permisos con token inválido");
+                    return Unauthorized("Token inválido - Usuario no identificado");
+                }
 
-            return Ok(new {
-                Total = total,
-                Permisos = permisosDto
-            });
+                _logger.LogInformation("Administrador {UserId} consultando permisos", userId);
+
+                var (total, permisosDto) = await _rolRepository.GetPermisos(userId);
+
+                return Ok(new {
+                    Total = total,
+                    Permisos = permisosDto,
+                    ConsultadoPor = userId
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error al obtener permisos para usuario {UserId}", User.GetUserId());
+                return StatusCode(500, "Error interno del servidor");
+            }
         }
 
-        [HttpPost, Route("crear-rol/{usuarioId}")]
-        public async Task<IActionResult> CrearRol([FromBody] CreateRolRequestDto createRolDto, string usuarioId)
+        [HttpPost, Route("crear-rol")]
+        [AdminOnly] // Solo administradores pueden crear roles
+        public async Task<IActionResult> CrearRol([FromBody] CreateRolRequestDto createRolDto)
         {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
+            try
+            {
+                if (!ModelState.IsValid)
+                    return BadRequest(ModelState);
 
-            string userNombre = await _personaRepository.GetNombreByIdAsync(usuarioId);
+                // Obtener el userId del token JWT
+                var userId = User.GetUserId();
+                if (string.IsNullOrEmpty(userId))
+                {
+                    _logger.LogWarning("Intento de crear rol con token inválido");
+                    return Unauthorized("Token inválido - Usuario no identificado");
+                }
 
-            var (Success, ErrorMessage, CreatedRol) = await _rolRepository.CrearRol(createRolDto, userNombre);
+                _logger.LogInformation("Administrador {UserId} creando rol: {RolName}", userId, createRolDto.Name);
 
-            if (!Success)
-                return BadRequest(ErrorMessage);
+                // Obtener nombre del usuario para auditoría
+                string userNombre = await _personaRepository.GetNombreByIdAsync(userId) ?? "Usuario desconocido";
 
-            return Ok(CreatedRol);
+                var (Success, ErrorMessage, CreatedRol) = await _rolRepository.CrearRol(createRolDto, userNombre);
+
+                if (!Success)
+                {
+                    _logger.LogWarning("Error al crear rol para usuario {UserId}: {Error}", userId, ErrorMessage);
+                    return BadRequest(ErrorMessage);
+                }
+
+                _logger.LogInformation("Rol creado exitosamente por usuario {UserId}", userId);
+                return Ok(new { Rol = CreatedRol, CreadoPor = userId });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error al crear rol para usuario {UserId}", User.GetUserId());
+                return StatusCode(500, "Error interno del servidor");
+            }
         }
 
-        [HttpPut, Route("actualizar-permiso/{usuarioId}")]
-        public async Task<IActionResult> ActualizarPermiso([FromBody] UpdatePermisoRequestDto updatePermisoDto, string usuarioId)
+        [HttpPut, Route("actualizar-permiso")]
+        [AdminOnly] // Solo administradores pueden actualizar permisos
+        public async Task<IActionResult> ActualizarPermiso([FromBody] UpdatePermisoRequestDto updatePermisoDto)
         {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
+            try
+            {
+                if (!ModelState.IsValid)
+                    return BadRequest(ModelState);
 
-            string userNombre = await _personaRepository.GetNombreByIdAsync(usuarioId);
+                // Obtener el userId del token JWT
+                var userId = User.GetUserId();
+                if (string.IsNullOrEmpty(userId))
+                {
+                    _logger.LogWarning("Intento de actualizar permiso con token inválido");
+                    return Unauthorized("Token inválido - Usuario no identificado");
+                }
 
-            var (Success, ErrorMessage, UpdatedPermiso) = await _rolRepository.ActualizarPermiso(updatePermisoDto, userNombre);
+                _logger.LogInformation("Administrador {UserId} actualizando permiso", userId);
 
-            if (!Success)
-                return BadRequest(ErrorMessage);
+                // Obtener nombre del usuario para auditoría
+                string userNombre = await _personaRepository.GetNombreByIdAsync(userId) ?? "Usuario desconocido";
 
-            return Ok(UpdatedPermiso);
+                var (Success, ErrorMessage, UpdatedPermiso) = await _rolRepository.ActualizarPermiso(updatePermisoDto, userNombre);
+
+                if (!Success)
+                {
+                    _logger.LogWarning("Error al actualizar permiso para usuario {UserId}: {Error}", userId, ErrorMessage);
+                    return BadRequest(ErrorMessage);
+                }
+
+                _logger.LogInformation("Permiso actualizado exitosamente por usuario {UserId}", userId);
+                return Ok(new { Permiso = UpdatedPermiso, ActualizadoPor = userId });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error al actualizar permiso para usuario {UserId}", User.GetUserId());
+                return StatusCode(500, "Error interno del servidor");
+            }
         }
 
-        [HttpPut, Route("actualizar-rol/{usuarioId}")]
-        public async Task<IActionResult> ActualizarRol([FromBody] UpdateRolRequestDto updateRolDto, string usuarioId)
+        [HttpPut, Route("actualizar-rol")]
+        [AdminOnly] // Solo administradores pueden actualizar roles
+        public async Task<IActionResult> ActualizarRol([FromBody] UpdateRolRequestDto updateRolDto)
         {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
+            try
+            {
+                if (!ModelState.IsValid)
+                    return BadRequest(ModelState);
 
-            string userNombre = await _personaRepository.GetNombreByIdAsync(usuarioId);
+                // Obtener el userId del token JWT
+                var userId = User.GetUserId();
+                if (string.IsNullOrEmpty(userId))
+                {
+                    _logger.LogWarning("Intento de actualizar rol con token inválido");
+                    return Unauthorized("Token inválido - Usuario no identificado");
+                }
 
-            var (Success, ErrorMessage, UpdatedRol) = await _rolRepository.ActualizarRol(updateRolDto, userNombre);
+                _logger.LogInformation("Administrador {UserId} actualizando rol", userId);
 
-            if (!Success)
-                return BadRequest(ErrorMessage);
+                // Obtener nombre del usuario para auditoría
+                string userNombre = await _personaRepository.GetNombreByIdAsync(userId) ?? "Usuario desconocido";
 
-            return Ok(UpdatedRol);
+                var (Success, ErrorMessage, UpdatedRol) = await _rolRepository.ActualizarRol(updateRolDto, userNombre);
+
+                if (!Success)
+                {
+                    _logger.LogWarning("Error al actualizar rol para usuario {UserId}: {Error}", userId, ErrorMessage);
+                    return BadRequest(ErrorMessage);
+                }
+
+                _logger.LogInformation("Rol actualizado exitosamente por usuario {UserId}", userId);
+                return Ok(new { Rol = UpdatedRol, ActualizadoPor = userId });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error al actualizar rol para usuario {UserId}", User.GetUserId());
+                return StatusCode(500, "Error interno del servidor");
+            }
         }
 
     }

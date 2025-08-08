@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
-using SISTEMA_VACACIONES.Data;
+using sistema_vacaciones_back.Data;
 using sistema_vacaciones_back.Interfaces;
 using sistema_vacaciones_back.Models;
 
@@ -55,11 +55,7 @@ namespace sistema_vacaciones_back.Repository
 
         public async Task<string> GetNombreByIdAsync(string id)
         {
-            Persona persona = await _context.Personas.Include(u => u.Usuario).FirstOrDefaultAsync(x => x.Usuario.Id == id);
-            if(persona == null)
-                return null;
-
-            return persona.Nombre;
+            return null;
         }
     }
 }

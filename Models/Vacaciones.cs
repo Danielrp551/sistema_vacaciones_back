@@ -13,7 +13,7 @@ namespace sistema_vacaciones_back.Models
         public int Id { get; set; }
 
         [Required]
-        public int PersonaId { get; set; }
+        public string  PersonaId { get; set; }
 
         [ForeignKey("PersonaId")]
         public Persona Persona { get; set; }

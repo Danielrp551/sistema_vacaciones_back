@@ -13,8 +13,8 @@ namespace sistema_vacaciones_back.Mappers
         {
             return new PermisoDto
             {
-                Id = permiso.Id,
-                NombreRuta = permiso.NombreRuta,
+                Id = permiso.Id.GetHashCode(),
+                NombreRuta = permiso.Nombre,
                 Descripcion = permiso.Descripcion,
             };
         }

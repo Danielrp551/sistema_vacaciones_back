@@ -16,6 +16,16 @@ namespace sistema_vacaciones_back.Helpers
         public int? Periodo { get; set; } = null;
         public string? TipoVacaciones { get; set; } = null;
 
+        // Nuevos filtros para gestión de solicitudes
+        public string? EmpleadoId { get; set; } = null;
+        public bool? IncluirSubordinadosNivelN { get; set; } = false;
+        public DateTime? FechaInicio { get; set; } = null;
+        public DateTime? FechaFin { get; set; } = null;
+        
+        // Filtros de rango para fecha de inicio de vacaciones
+        public DateTime? FechaInicioRango { get; set; } = null; // Desde cuándo buscar
+        public DateTime? FechaFinRango { get; set; } = null;    // Hasta cuándo buscar
+
         // Pagination
         public int PageNumber { get; set; } = 1;
         public int PageSize { get; set; } = 10;        

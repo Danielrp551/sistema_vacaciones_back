@@ -4,15 +4,13 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
-using SISTEMA_VACACIONES.Data;
-using SISTEMA_VACACIONES.Identity;
-using SISTEMA_VACACIONES.Interfaces;
-using SISTEMA_VACACIONES.Repository;
-using SISTEMA_VACACIONES.Scrapers;
-using SISTEMA_VACACIONES.Services;
+using sistema_vacaciones_back.Data;
+using sistema_vacaciones_back.Identity;
 using sistema_vacaciones_back.Interfaces;
+using sistema_vacaciones_back.Middleware;
 using sistema_vacaciones_back.Models;
 using sistema_vacaciones_back.Repository;
+using sistema_vacaciones_back.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -83,7 +81,6 @@ builder.Services.AddAuthentication(options => {
 });
 
 // Inyectar dependencias
-builder.Services.AddScoped<IProveedorRepository, ProveedorRepository>();
 builder.Services.AddScoped<IPersonaRepository, PersonaRepository>();
 builder.Services.AddScoped<IUsuarioRepository, UsuarioRepository>();
 builder.Services.AddScoped<IHistorialVacacionesRepository, HistorialVacacionesRepository>();
@@ -91,16 +88,6 @@ builder.Services.AddScoped<ISolicitudVacacionesRepository, SolicitudVacacionesRe
 builder.Services.AddScoped<IRolRepository, RolRepository>();
 builder.Services.AddScoped<ITokenService, TokenService>();
 
-// Scrapers
-builder.Services.AddHttpClient<IScraper, CIIJScraper>(client =>
-{
-    client.BaseAddress = new Uri("https://offshoreleaks.icij.org/");
-    client.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0 (compatible; ScraperBot/1.0)");
-});
-builder.Services.AddScoped<IScraper, OFACScraper>();
-builder.Services.AddScoped<IScraper, WorldBankScraper>();
-
-builder.Services.AddScoped<IScraperService, ScraperService>();
 
 // PARA PROBAR EL JWT EN SWAGGER
 builder.Services.AddSwaggerGen(option =>
@@ -160,6 +147,10 @@ app.UseCors(x => x
 );
 
 app.UseAuthentication();
+
+// Middleware de validación de seguridad personalizado
+app.UseMiddleware<SecurityValidationMiddleware>();
+
 app.UseAuthorization();
 
 app.MapControllers();

@@ -9,21 +9,24 @@ namespace sistema_vacaciones_back.Models
 {
     public class Restriccion
     {
-    [Key]
-    public int Id { get; set; }
+        [Key]
+        public string  Id { get; set; }
 
-    [Required]
-    public string AdminId { get; set; }
+        [Required]
+        public string UsuarioId { get; set; }
 
-    [ForeignKey("AdminId")]
-    public Usuario Admin { get; set; }
+        [ForeignKey("UsuarioId")]
+        public Usuario Usuario { get; set; }
 
-    [Required]
-    public int FechaLimiteMes { get; set; } // Día máximo del mes para solicitar vacaciones
+        [Required]
+        public int FechaLimiteMes { get; set; } // Día máximo del mes para solicitar vacaciones
 
-    [Required]
-    public bool Activo { get; set; } = true; // Si la restricción está activa
+        public string  CreatedBy { get; set; }
+        public DateTime CreatedOn { get; set; }
 
-    public DateTime CreadoEl { get; set; } = DateTime.UtcNow;        
+        public string? UpdatedBy { get; set; }
+        public DateTime? UpdatedOn { get; set; }
+
+        public bool IsDeleted { get; set; } = false;
     }
 }
