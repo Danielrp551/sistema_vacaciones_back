@@ -297,7 +297,7 @@ namespace sistema_vacaciones_back.Controllers
                 _logger.LogInformation("Usuario {UserId} consultando sus solicitudes de vacaciones", userId);
 
                 var solicitudes = await _solicitudVacacionesRepository.GetSolicitudesPagination(queryObject, userId);
-                var solicitudesDto = solicitudes.Select(s => s.ToSolicitudVacacionesDto()).ToList();
+                var solicitudesDto = solicitudes.Select(s => s.ToSolicitudVacacionesDetailDto(userId)).ToList();
 
                 return Ok(new {
                     Total = solicitudes.Count,

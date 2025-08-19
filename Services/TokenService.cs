@@ -20,7 +20,7 @@ namespace sistema_vacaciones_back.Services
             _config = config;
             _key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["JWT:SigningKey"]));
         }
-        public string CreateToken(IdentityUser user)
+        public string CreateToken(IdentityUser user, IList<string> roles)
         {
             // Validaciones de entrada
             if (user == null || string.IsNullOrEmpty(user.Id))
@@ -48,6 +48,16 @@ namespace sistema_vacaciones_back.Services
                 new Claim("token_type", "access_token"), // Tipo de token
                 new Claim("scope", "api_access") // Scope del token
             };
+
+            // Agregar claims de roles
+            if (roles != null && roles.Any())
+            {
+                foreach (var role in roles)
+                {
+                    claims.Add(new Claim(ClaimTypes.Role, role));
+                    claims.Add(new Claim("role", role)); // Para compatibilidad adicional
+                }
+            }
 
             var creds = new SigningCredentials(_key, SecurityAlgorithms.HmacSha512Signature);
 

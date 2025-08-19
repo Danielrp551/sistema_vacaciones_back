@@ -1,0 +1,117 @@
+using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+
+namespace sistema_vacaciones_back.DTOs.Usuarios
+{
+    /// <summary>
+    /// DTO para crear un nuevo usuario en el sistema
+    /// </summary>
+    public class CreateUsuarioDto
+    {
+        // ========== INFORMACIÓN PERSONAL ==========
+        
+        /// <summary>
+        /// Nombres del usuario
+        /// </summary>
+        [Required(ErrorMessage = "Los nombres son obligatorios")]
+        [MaxLength(100, ErrorMessage = "Los nombres no pueden exceder 100 caracteres")]
+        public string Nombres { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Apellido paterno del usuario
+        /// </summary>
+        [Required(ErrorMessage = "El apellido paterno es obligatorio")]
+        [MaxLength(100, ErrorMessage = "El apellido paterno no puede exceder 100 caracteres")]
+        public string ApellidoPaterno { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Apellido materno del usuario
+        /// </summary>
+        [Required(ErrorMessage = "El apellido materno es obligatorio")]
+        [MaxLength(100, ErrorMessage = "El apellido materno no puede exceder 100 caracteres")]
+        public string ApellidoMaterno { get; set; } = string.Empty;
+
+        /// <summary>
+        /// DNI o documento de identidad
+        /// </summary>
+        [Required(ErrorMessage = "El DNI es obligatorio")]
+        [MaxLength(15, ErrorMessage = "El DNI no puede exceder 15 caracteres")]
+        [RegularExpression(@"^[0-9]+$", ErrorMessage = "El DNI solo debe contener números")]
+        public string Dni { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Indica si el usuario es extranjero
+        /// </summary>
+        public bool Extranjero { get; set; } = false;
+
+        /// <summary>
+        /// Número de celular (opcional)
+        /// </summary>
+        [RegularExpression(@"^$|^[\+]?[1-9][\d]{0,15}$", ErrorMessage = "El formato del número de celular no es válido")]
+        [MaxLength(20, ErrorMessage = "El número de celular no puede exceder 20 caracteres")]
+        public string? NumeroCelular { get; set; }
+
+        // ========== INFORMACIÓN DE CUENTA ==========
+
+        /// <summary>
+        /// Email del usuario (será usado como username)
+        /// </summary>
+        [Required(ErrorMessage = "El email es obligatorio")]
+        [EmailAddress(ErrorMessage = "El formato del email no es válido")]
+        [MaxLength(256, ErrorMessage = "El email no puede exceder 256 caracteres")]
+        public string Email { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Contraseña temporal/inicial (opcional - se genera automáticamente si no se proporciona)
+        /// </summary>
+        [MinLength(6, ErrorMessage = "La contraseña debe tener al menos 6 caracteres")]
+        [MaxLength(100, ErrorMessage = "La contraseña no puede exceder 100 caracteres")]
+        public string? ContrasenaTemporal { get; set; }
+
+        /// <summary>
+        /// Indica si se debe forzar el cambio de contraseña en el primer login
+        /// </summary>
+        public bool ForzarCambioContrasena { get; set; } = true;
+
+        // ========== INFORMACIÓN LABORAL ==========
+
+        /// <summary>
+        /// Fecha de ingreso a la empresa
+        /// </summary>
+        [Required(ErrorMessage = "La fecha de ingreso es obligatoria")]
+        public DateTime FechaIngreso { get; set; }
+
+        /// <summary>
+        /// Empresa donde trabaja (obligatorio)
+        /// </summary>
+        [Required(ErrorMessage = "La empresa es obligatoria")]
+        [MaxLength(200, ErrorMessage = "El nombre de la empresa no puede exceder 200 caracteres")]
+        public string Empresa { get; set; } = string.Empty;
+
+        /// <summary>
+        /// ID del departamento al que pertenece
+        /// </summary>
+        [Required(ErrorMessage = "El departamento es obligatorio")]
+        public string DepartamentoId { get; set; } = string.Empty;
+
+        /// <summary>
+        /// ID del jefe directo (opcional)
+        /// </summary>
+        public string? JefeId { get; set; }
+
+        // ========== CONFIGURACIÓN ==========
+
+        /// <summary>
+        /// Lista de roles a asignar al usuario
+        /// </summary>
+        [Required(ErrorMessage = "Debe asignar al menos un rol")]
+        [MinLength(1, ErrorMessage = "Debe asignar al menos un rol")]
+        public List<string> Roles { get; set; } = new List<string>();
+
+        /// <summary>
+        /// Estado inicial del usuario (true = activo, false = inactivo)
+        /// </summary>
+        public bool EstadoInicial { get; set; } = true;
+    }
+}

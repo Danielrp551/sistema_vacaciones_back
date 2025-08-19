@@ -88,6 +88,9 @@ builder.Services.AddScoped<ISolicitudVacacionesRepository, SolicitudVacacionesRe
 builder.Services.AddScoped<IRolRepository, RolRepository>();
 builder.Services.AddScoped<ITokenService, TokenService>();
 
+// Servicio de auditoría
+builder.Services.AddScoped<IAuditoriaService, AuditoriaService>();
+
 
 // PARA PROBAR EL JWT EN SWAGGER
 builder.Services.AddSwaggerGen(option =>

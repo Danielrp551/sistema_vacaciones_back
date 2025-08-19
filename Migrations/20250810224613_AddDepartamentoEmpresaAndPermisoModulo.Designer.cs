@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using sistema_vacaciones_back.Data;
 
@@ -11,9 +12,11 @@ using sistema_vacaciones_back.Data;
 namespace SISTEMA_VACACIONES.Migrations
 {
     [DbContext(typeof(ApplicationDBContext))]
-    partial class ApplicationDBContextModelSnapshot : ModelSnapshot
+    [Migration("20250810224613_AddDepartamentoEmpresaAndPermisoModulo")]
+    partial class AddDepartamentoEmpresaAndPermisoModulo
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -162,148 +165,6 @@ namespace SISTEMA_VACACIONES.Migrations
                     b.HasKey("UserId", "LoginProvider", "Name");
 
                     b.ToTable("AspNetUserTokens", (string)null);
-                });
-
-            modelBuilder.Entity("sistema_vacaciones_back.Models.AuditoriaAcciones", b =>
-                {
-                    b.Property<string>("Id")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<bool>("EsVisible")
-                        .HasColumnType("bit");
-
-                    b.Property<DateTime>("FechaHora")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("IpAddress")
-                        .IsRequired()
-                        .HasMaxLength(45)
-                        .HasColumnType("nvarchar(45)");
-
-                    b.Property<string>("MensajeCorto")
-                        .IsRequired()
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
-
-                    b.Property<string>("MensajeDetallado")
-                        .HasMaxLength(1000)
-                        .HasColumnType("nvarchar(1000)");
-
-                    b.Property<string>("MensajePlantilla")
-                        .HasMaxLength(1000)
-                        .HasColumnType("nvarchar(1000)");
-
-                    b.Property<string>("MetadatosExtras")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Modulo")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<string>("Motivo")
-                        .HasMaxLength(1000)
-                        .HasColumnType("nvarchar(1000)");
-
-                    b.Property<string>("Observaciones")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
-
-                    b.Property<string>("RegistroAfectadoId")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<string>("SessionId")
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<string>("Severidad")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
-
-                    b.Property<string>("TablaAfectada")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<string>("Tags")
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
-
-                    b.Property<int?>("TiempoEjecucionMs")
-                        .HasColumnType("int");
-
-                    b.Property<string>("TipoAccion")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<string>("UserAgent")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
-
-                    b.Property<string>("UsuarioAfectadoEmail")
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
-
-                    b.Property<string>("UsuarioAfectadoId")
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<string>("UsuarioAfectadoNombre")
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
-
-                    b.Property<string>("UsuarioEjecutorEmail")
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
-
-                    b.Property<string>("UsuarioEjecutorId")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<string>("UsuarioEjecutorNombre")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
-
-                    b.Property<string>("ValoresAnteriores")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("ValoresNuevos")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("EsVisible")
-                        .HasDatabaseName("IX_AuditoriaAcciones_EsVisible");
-
-                    b.HasIndex("FechaHora")
-                        .HasDatabaseName("IX_AuditoriaAcciones_FechaHora");
-
-                    b.HasIndex("Severidad")
-                        .HasDatabaseName("IX_AuditoriaAcciones_Severidad");
-
-                    b.HasIndex("TipoAccion")
-                        .HasDatabaseName("IX_AuditoriaAcciones_TipoAccion");
-
-                    b.HasIndex("UsuarioAfectadoId")
-                        .HasDatabaseName("IX_AuditoriaAcciones_UsuarioAfectado")
-                        .HasFilter("[UsuarioAfectadoId] IS NOT NULL");
-
-                    b.HasIndex("UsuarioEjecutorId")
-                        .HasDatabaseName("IX_AuditoriaAcciones_UsuarioEjecutor");
-
-                    b.HasIndex("Modulo", "FechaHora")
-                        .HasDatabaseName("IX_AuditoriaAcciones_Modulo_FechaHora");
-
-                    b.HasIndex("TablaAfectada", "RegistroAfectadoId")
-                        .HasDatabaseName("IX_AuditoriaAcciones_Tabla_Registro");
-
-                    b.ToTable("AuditoriaAcciones");
                 });
 
             modelBuilder.Entity("sistema_vacaciones_back.Models.Departamento", b =>

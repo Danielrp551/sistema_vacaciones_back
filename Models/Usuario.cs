@@ -10,17 +10,27 @@ namespace sistema_vacaciones_back.Models
 {
     public class Usuario : IdentityUser
     {
-        public string  CreatedBy { get; set; }
-        public DateTime CreatedOn { get; set; }
-        public string? UpdatedBy { get; set; }
-        public DateTime? UpdatedOn { get; set; }
-        public bool IsDeleted { get; set; }
+        [Required]
+        [MaxLength(450)]
+        public string CreatedBy { get; set; } = string.Empty;
 
         [Required]
-        public string PersonaId { get; set; }
+        public DateTime CreatedOn { get; set; } = DateTime.UtcNow;
+
+        [MaxLength(450)]
+        public string? UpdatedBy { get; set; }
+
+        public DateTime? UpdatedOn { get; set; }
+
+        [Required]
+        public bool IsDeleted { get; set; } = false;
+
+        [Required]
+        [MaxLength(450)]
+        public string PersonaId { get; set; } = string.Empty;
 
         [ForeignKey("PersonaId")]
-        public Persona Persona { get; set; }
+        public Persona? Persona { get; set; }
 
         public string? JefeId { get; set; }
 
@@ -28,5 +38,12 @@ namespace sistema_vacaciones_back.Models
         public Usuario? Jefe { get; set; }
 
         public ICollection<Usuario>? Subordinados { get; set; }
+
+        // Relación con Departamento
+        [MaxLength(450)]
+        public string? DepartamentoId { get; set; }
+
+        [ForeignKey("DepartamentoId")]
+        public Departamento? Departamento { get; set; }
     }
 }

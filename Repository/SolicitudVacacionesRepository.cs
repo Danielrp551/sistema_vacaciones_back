@@ -99,6 +99,20 @@ namespace sistema_vacaciones_back.Repository
                 return (false, "Existe solapamiento con otra solicitud en estado pendiente o aprobado.", null);
             }
 
+            // Validacion de que no se puede pedir solo fechas que son fin de semana (ejm.solo sabado, o domingo, o ambos)
+            if (nuevaFechaInicio.DayOfWeek == DayOfWeek.Saturday && nuevaFechaFin.DayOfWeek == DayOfWeek.Saturday)
+            {
+                return (false, "No se pueden solicitar vacaciones solo para sábados.", null);
+            }
+            if (nuevaFechaInicio.DayOfWeek == DayOfWeek.Sunday && nuevaFechaFin.DayOfWeek == DayOfWeek.Sunday)
+            {
+                return (false, "No se pueden solicitar vacaciones solo para domingos.", null);
+            }
+            if (nuevaFechaInicio.DayOfWeek == DayOfWeek.Saturday && nuevaFechaFin.DayOfWeek == DayOfWeek.Sunday)
+            {
+                return (false, "No se pueden solicitar vacaciones solo para sábados y domingos.", null);
+            }
+
             DateTime fechaIngreso = usuario.Persona.FechaIngreso;
             DateTime fechaActual = solicitud.FechaInicio.AddDays(1).AddTicks(-1); 
 
@@ -139,6 +153,11 @@ namespace sistema_vacaciones_back.Repository
             }
 
             solicitud.DiasFinde = sabados + domingos;
+
+            if (sabados + domingos == solicitud.DiasSolicitados)
+            {
+                return (false, "No se puede solicitar vacaciones solo para fines de semana.", null);
+            }
 
             await _context.SolicitudesVacaciones.AddAsync(solicitud);
             await _context.SaveChangesAsync();
@@ -248,18 +267,63 @@ namespace sistema_vacaciones_back.Repository
             {
                 // Buscamos todas las solicitudes que correspondan a este período
                 var solicitudesDelPeriodo = solicitudes
-                    .Where(s => s.Periodo == periodo.Periodo)
+                    .Where(s => s.Periodo == periodo.Periodo && (s.Estado == "aprobado" || s.Estado == "pendiente"))
                     .ToList();
 
                 // 1. Sumar días libres pedidos en este período
                 int totalLibres = solicitudesDelPeriodo
                     .Where(s => s.TipoVacaciones == "libres")
-                    .Sum(s => s.DiasSolicitados);
+                    .Sum(s => s.DiasSolicitados); // dias totales solicitados = dias habiles + dias finde
 
                 // 2. Sumar días de fin de semana, solo para solicitudes "libres"
                 int totalFinde = solicitudesDelPeriodo
                     .Where(s => s.TipoVacaciones == "libres")
                     .Sum(s => s.DiasFinde);
+
+                int totalHabiles = totalLibres - totalFinde;
+
+                int totalLibresFindeRestar = 0;
+                int totalLibresRestar = 0;
+                switch (totalHabiles)
+                {
+                    case 1:
+                        totalLibresFindeRestar = 0;
+                        break;
+                    case 2:
+                        totalLibresFindeRestar = 0;
+                        break;
+                    case 3:
+                        totalLibresFindeRestar = 0;
+                        break;
+                    case 4:
+                        totalLibresFindeRestar = 0;
+                        break;
+                    case 5:
+                        totalLibresFindeRestar = 2;
+                        break;
+                    case 6:
+                        totalLibresFindeRestar = 2;
+                        break;
+                    case 7:
+                        totalLibresFindeRestar = 2;
+                        break;
+                    case 8:
+                        totalLibresFindeRestar = 2;
+                        break;
+                    case 9:
+                        totalLibresFindeRestar = 2;
+                        break;
+                    case 10:
+                        totalLibresFindeRestar = 4;
+                        break;
+                    case 11:
+                        totalLibresFindeRestar = 4;
+                        break;
+                    default:
+                        totalLibresFindeRestar = 4;
+                        break;
+                }
+                totalLibresRestar = totalHabiles + totalLibresFindeRestar;
 
                 // 3. Sumar días bloque pedidos en este período
                 int totalBloque = solicitudesDelPeriodo
@@ -268,14 +332,14 @@ namespace sistema_vacaciones_back.Repository
 
                 // 4. Restar en el período
                 // Los fines de semana se restan junto con los días libres
-                int dias_finde_sumar;
-                if (totalFinde >=4) dias_finde_sumar = 0;
-                else{
-                    dias_finde_sumar = (int)totalLibres/5;
-                    dias_finde_sumar *=2; 
-                    dias_finde_sumar -= totalFinde;
-                }
-                periodo.DiasLibres -= totalLibres + dias_finde_sumar;
+                //if (totalFinde >=4) dias_finde_sumar = 0;
+                //else{
+                //    dias_finde_sumar = (int)totalLibres/5;
+                //    dias_finde_sumar *=2; 
+                //    dias_finde_sumar -= totalFinde;
+                //}
+                //periodo.DiasLibres -= totalLibres + dias_finde_sumar;
+                periodo.DiasLibres -= totalLibresRestar;
                 if (periodo.DiasLibres < 0) periodo.DiasLibres = 0;
 
                 periodo.DiasBloque -= totalBloque;
@@ -294,7 +358,15 @@ namespace sistema_vacaciones_back.Repository
 
         public async Task<List<SolicitudVacaciones>> GetSolicitudesPagination(SolicitudesQueryObject queryObject, string usuarioId)
         {
-            var solicitudes = _context.SolicitudesVacaciones.AsQueryable();
+            var solicitudes = _context.SolicitudesVacaciones
+                .Include(s => s.Solicitante!)
+                    .ThenInclude(u => u.Persona)
+                .Include(s => s.Solicitante!)
+                    .ThenInclude(u => u.Jefe!)
+                        .ThenInclude(j => j.Persona)
+                .Include(s => s.Aprobador!)
+                    .ThenInclude(a => a.Persona)
+                .AsQueryable();
             
             // FILTRO PRINCIPAL: Solo solicitudes del usuario actual
             solicitudes = solicitudes.Where(s => s.SolicitanteId == usuarioId);
@@ -325,66 +397,8 @@ namespace sistema_vacaciones_back.Repository
                 solicitudes = solicitudes.Where(s => s.TipoVacaciones == queryObject.TipoVacaciones);
             }
 
-            if (!string.IsNullOrWhiteSpace(queryObject.SortBy))
-            {
-                IOrderedQueryable<SolicitudVacaciones> orderedSolicitudes;
-
-                if (queryObject.SortBy.Equals("id", StringComparison.OrdinalIgnoreCase))
-                {
-                    orderedSolicitudes = queryObject.IsDescending
-                        ? solicitudes.OrderByDescending(p => p.Id)
-                        : solicitudes.OrderBy(p => p.Id);
-                }
-                else if (queryObject.SortBy.Equals("periodo", StringComparison.OrdinalIgnoreCase))
-                {
-                    orderedSolicitudes = queryObject.IsDescending
-                        ? solicitudes.OrderByDescending(p => p.Periodo)
-                        : solicitudes.OrderBy(p => p.Periodo);
-                }
-                else if (queryObject.SortBy.Equals("diasSolicitados", StringComparison.OrdinalIgnoreCase))
-                {
-                    orderedSolicitudes = queryObject.IsDescending
-                        ? solicitudes.OrderByDescending(p => p.DiasSolicitados)
-                        : solicitudes.OrderBy(p => p.DiasSolicitados);
-                }
-                else if (queryObject.SortBy.Equals("tipoVacaciones", StringComparison.OrdinalIgnoreCase))
-                {
-                    orderedSolicitudes = queryObject.IsDescending
-                        ? solicitudes.OrderByDescending(p => p.TipoVacaciones)
-                        : solicitudes.OrderBy(p => p.TipoVacaciones);
-                }
-                else if (queryObject.SortBy.Equals("fechaInicio", StringComparison.OrdinalIgnoreCase))
-                {
-                    orderedSolicitudes = queryObject.IsDescending
-                        ? solicitudes.OrderByDescending(p => p.FechaInicio)
-                        : solicitudes.OrderBy(p => p.FechaInicio);
-                }
-                else if (queryObject.SortBy.Equals("fechaSolicitud", StringComparison.OrdinalIgnoreCase))
-                {
-                    orderedSolicitudes = queryObject.IsDescending
-                        ? solicitudes.OrderByDescending(p => p.FechaSolicitud)
-                        : solicitudes.OrderBy(p => p.FechaSolicitud);
-                }
-                else if (queryObject.SortBy.Equals("estado", StringComparison.OrdinalIgnoreCase))
-                {
-                    orderedSolicitudes = queryObject.IsDescending
-                        ? solicitudes.OrderByDescending(p => p.Estado)
-                        : solicitudes.OrderBy(p => p.Estado);
-                }
-                else
-                {
-                    // En caso de que SortBy tenga otro valor, se utiliza fecha de edición
-                    orderedSolicitudes = solicitudes.OrderByDescending(p => p.FechaSolicitud);
-                }
-
-                // Ordenamiento secundario por FechaUltimaEdicion
-                solicitudes = orderedSolicitudes.ThenByDescending(p => p.FechaSolicitud);
-            }
-            else
-            {
-                // Si no se especifica SortBy, ordenar solamente por FechaUltimaEdicion
-                solicitudes = solicitudes.OrderByDescending(p => p.FechaSolicitud);
-            }
+            // Aplicar ordenamiento dinámico usando el método centralizado
+            solicitudes = ApplyOrdering(solicitudes, queryObject.SortBy, queryObject.IsDescending);
 
             var skipNumber = (queryObject.PageNumber - 1) * queryObject.PageSize;
 
@@ -657,8 +671,8 @@ namespace sistema_vacaciones_back.Repository
                     query = query.Where(s => s.FechaInicio <= queryObject.FechaFinRango.Value);
                 }
 
-                // Ordenar por fecha de solicitud (más recientes primero)
-                query = query.OrderByDescending(s => s.FechaSolicitud);
+                // Aplicar ordenamiento dinámico
+                query = ApplyOrdering(query, queryObject.SortBy, queryObject.IsDescending);
 
                 // Obtener el total de registros sin paginación
                 var totalCount = await query.CountAsync();
@@ -831,6 +845,84 @@ namespace sistema_vacaciones_back.Repository
             {
                 return null;
             }
+        }
+
+        /// <summary>
+        /// Aplica ordenamiento dinámico a la consulta de solicitudes
+        /// </summary>
+        private IQueryable<SolicitudVacaciones> ApplyOrdering(IQueryable<SolicitudVacaciones> query, string? sortBy, bool isDescending)
+        {
+            if (string.IsNullOrEmpty(sortBy))
+            {
+                // Ordenamiento por defecto: fecha de solicitud descendente
+                return query.OrderByDescending(s => s.FechaSolicitud);
+            }
+
+            // Logging para debug
+            Console.WriteLine($"[DEBUG] ApplyOrdering - sortBy: '{sortBy}', isDescending: {isDescending}");
+
+            // Normalizar el campo de ordenamiento (case-insensitive)
+            var sortField = sortBy.ToLowerInvariant();
+            Console.WriteLine($"[DEBUG] ApplyOrdering - sortField normalizado: '{sortField}'");
+
+            // Aplicar ordenamiento según el campo
+            if (sortField == "solicitante.persona.nombres")
+            {
+                Console.WriteLine($"[DEBUG] Aplicando ordenamiento por Solicitante.Persona.Nombres, isDescending: {isDescending}");
+                return isDescending
+                    ? query.OrderByDescending(s => s.Solicitante!.Persona!.Nombres)
+                    : query.OrderBy(s => s.Solicitante!.Persona!.Nombres);
+            }
+            
+            return sortField switch
+            {
+                "id" => isDescending 
+                    ? query.OrderByDescending(s => s.Id) 
+                    : query.OrderBy(s => s.Id),
+                
+                "tipovacaciones" => isDescending
+                    ? query.OrderByDescending(s => s.TipoVacaciones)
+                    : query.OrderBy(s => s.TipoVacaciones),
+                
+                "fechainicio" => isDescending
+                    ? query.OrderByDescending(s => s.FechaInicio)
+                    : query.OrderBy(s => s.FechaInicio),
+                
+                "fechafin" => isDescending
+                    ? query.OrderByDescending(s => s.FechaFin)
+                    : query.OrderBy(s => s.FechaFin),
+                
+                "diassolicitados" => isDescending
+                    ? query.OrderByDescending(s => s.DiasSolicitados)
+                    : query.OrderBy(s => s.DiasSolicitados),
+                
+                "estado" => isDescending
+                    ? query.OrderByDescending(s => s.Estado)
+                    : query.OrderBy(s => s.Estado),
+                
+                "fechasolicitud" => isDescending
+                    ? query.OrderByDescending(s => s.FechaSolicitud)
+                    : query.OrderBy(s => s.FechaSolicitud),
+                
+                "periodo" => isDescending
+                    ? query.OrderByDescending(s => s.Periodo)
+                    : query.OrderBy(s => s.Periodo),
+                
+                "aprobador.persona.nombres" => isDescending
+                    ? query.OrderByDescending(s => s.Aprobador!.Persona!.Nombres)
+                    : query.OrderBy(s => s.Aprobador!.Persona!.Nombres),
+                
+                "fechaaprobacion" => isDescending
+                    ? query.OrderByDescending(s => s.FechaAprobacion)
+                    : query.OrderBy(s => s.FechaAprobacion),
+                
+                "jefe.persona.nombres" => isDescending
+                    ? query.OrderByDescending(s => s.Solicitante!.Jefe!.Persona!.Nombres)
+                    : query.OrderBy(s => s.Solicitante!.Jefe!.Persona!.Nombres),
+                
+                // Fallback a ordenamiento por defecto
+                _ => query.OrderByDescending(s => s.FechaSolicitud)
+            };
         }
     }
 }

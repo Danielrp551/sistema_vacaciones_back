@@ -45,7 +45,10 @@ namespace sistema_vacaciones_back.Security
                 var userRoles = user.GetUserRoles();
                 if (!_requiredRoles.Any(role => userRoles.Contains(role, StringComparer.OrdinalIgnoreCase)))
                 {
-                    context.Result = new ForbidResult($"Acceso denegado. Roles requeridos: {string.Join(", ", _requiredRoles)}");
+                    context.Result = new ObjectResult($"Acceso denegado. Roles requeridos: {string.Join(", ", _requiredRoles)}")
+                    {
+                        StatusCode = 403
+                    };
                     return;
                 }
             }

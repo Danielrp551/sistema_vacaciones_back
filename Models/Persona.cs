@@ -9,28 +9,35 @@ namespace sistema_vacaciones_back.Models
 {
     public class Persona
     {
-        public string  Id { get; set; }
+        [Key]
+        [DatabaseGenerated(DatabaseGeneratedOption.None)]
+        public string Id { get; set; } = Guid.NewGuid().ToString();
 
         [Required]
         [MaxLength(15)]
-        public string Dni { get; set; }
+        public string Dni { get; set; } = string.Empty;
 
         [Required]
         [MaxLength(100)]
-        public string Nombres { get; set; }
+        public string Nombres { get; set; } = string.Empty;
 
         [Required]
         [MaxLength(100)]
-        public string ApellidoPaterno { get; set; }
+        public string ApellidoPaterno { get; set; } = string.Empty;
 
         [Required]
         [MaxLength(100)]
-        public string ApellidoMaterno { get; set; }
+        public string ApellidoMaterno { get; set; } = string.Empty;
 
         [Required]
         public DateTime FechaIngreso { get; set; }
 
         public Boolean Extranjero { get; set; }
 
+        /// <summary>
+        /// Empresa donde trabaja la persona
+        /// </summary>
+        [MaxLength(200)]
+        public string? Empresa { get; set; }
     }
 }

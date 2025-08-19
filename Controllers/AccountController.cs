@@ -58,7 +58,7 @@ namespace SISTEMA_VACACIONES.Controllers
                 Id = user.Id,
                 UserName = user.UserName,
                 Email = user.Email,
-                Token = _tokenService.CreateToken(user),
+                Token = _tokenService.CreateToken(user, roles),
                 Persona = user.Persona.ToPersonaDto(),
                 Roles = roles.ToList(),
                 Permisos = permisos
@@ -121,7 +121,7 @@ namespace SISTEMA_VACACIONES.Controllers
                     Id = appUser.Id,
                     UserName = appUser.UserName,
                     Email = appUser.Email,
-                    Token = _tokenService.CreateToken(appUser),
+                    Token = _tokenService.CreateToken(appUser, new List<string> { "User" }),
                     Persona = persona.ToPersonaDto(),
                     Roles = new List<string> { "User" },
                     Permisos = permisos

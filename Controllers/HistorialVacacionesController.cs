@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using sistema_vacaciones_back.DTOs.HistorialVacaciones;
+using sistema_vacaciones_back.DTOs.SaldoVacaciones;
 using sistema_vacaciones_back.Extensions;
 using sistema_vacaciones_back.Interfaces;
 using sistema_vacaciones_back.Models;
@@ -52,6 +53,12 @@ namespace sistema_vacaciones_back.Controllers
                 {
                     _logger.LogWarning("Usuario {UserId} no encontrado en la base de datos", userId);
                     return NotFound("Usuario no encontrado");
+                }
+
+                if (usuario?.Persona?.FechaIngreso == null)
+                {
+                    _logger.LogWarning("Usuario {UserId} no tiene fecha de ingreso configurada", userId);
+                    return BadRequest("Usuario no tiene fecha de ingreso configurada");
                 }
 
                 DateTime fechaIngreso = usuario.Persona.FechaIngreso;
@@ -166,19 +173,63 @@ namespace sistema_vacaciones_back.Controllers
             {
                 // Buscamos todas las solicitudes que correspondan a este período
                 var solicitudesDelPeriodo = solicitudes
-                    .Where(s => s.Periodo == periodo.Periodo)
+                    .Where(s => s.Periodo == periodo.Periodo && (s.Estado == "aprobado" || s.Estado == "pendiente"))
                     .ToList();
 
                 // 1. Sumar días libres pedidos en este período
                 int totalLibres = solicitudesDelPeriodo
                     .Where(s => s.TipoVacaciones == "libres")
-                    .Sum(s => s.DiasSolicitados);
+                    .Sum(s => s.DiasSolicitados); // dias totales solicitados = dias habiles + dias finde
 
                 // 2. Sumar días de fin de semana, solo para solicitudes "libres"
                 int totalFinde = solicitudesDelPeriodo
                     .Where(s => s.TipoVacaciones == "libres")
                     .Sum(s => s.DiasFinde);
 
+                int totalHabiles = totalLibres - totalFinde;
+
+                int totalLibresFindeRestar = 0;
+                int totalLibresRestar = 0;
+                switch (totalHabiles)
+                {
+                    case 1:
+                        totalLibresFindeRestar = 0;
+                        break;
+                    case 2:
+                        totalLibresFindeRestar = 0;
+                        break;
+                    case 3:
+                        totalLibresFindeRestar = 0;
+                        break;
+                    case 4:
+                        totalLibresFindeRestar = 0;
+                        break;
+                    case 5:
+                        totalLibresFindeRestar = 2;
+                        break;
+                    case 6:
+                        totalLibresFindeRestar = 2;
+                        break;
+                    case 7:
+                        totalLibresFindeRestar = 2;
+                        break;
+                    case 8:
+                        totalLibresFindeRestar = 2;
+                        break;
+                    case 9:
+                        totalLibresFindeRestar = 2;
+                        break;
+                    case 10:
+                        totalLibresFindeRestar = 4;
+                        break;
+                    case 11:
+                        totalLibresFindeRestar = 4;
+                        break;
+                    default:
+                        totalLibresFindeRestar = 4;
+                        break;
+                }
+                totalLibresRestar = totalHabiles + totalLibresFindeRestar;
                 // 3. Sumar días bloque pedidos en este período
                 int totalBloque = solicitudesDelPeriodo
                     .Where(s => s.TipoVacaciones == "bloque")
@@ -186,19 +237,297 @@ namespace sistema_vacaciones_back.Controllers
 
                 // 4. Restar en el período
                 // Los fines de semana se restan junto con los días libres
-                int dias_finde_sumar;
-                if (totalFinde >=4) dias_finde_sumar = 0;
-                else{
-                    dias_finde_sumar = (int)totalLibres/5;
-                    dias_finde_sumar *=2; 
-                    dias_finde_sumar -= totalFinde;
-                }
-                periodo.DiasLibres -= totalLibres + dias_finde_sumar;
+                //int dias_finde_sumar;
+                //if (totalFinde >=4) dias_finde_sumar = 0;
+                //else{
+                //    dias_finde_sumar = (int)totalLibres/5;
+                //    dias_finde_sumar *=2; 
+                //    dias_finde_sumar -= totalFinde;
+                //}
+                //periodo.DiasLibres -= totalLibres + dias_finde_sumar;
+                periodo.DiasLibres -= totalLibresRestar;
                 if (periodo.DiasLibres < 0) periodo.DiasLibres = 0;
-
+                
                 periodo.DiasBloque -= totalBloque;
                 if (periodo.DiasBloque < 0) periodo.DiasBloque = 0;
             }
+        }
+
+        /// <summary>
+        /// Obtiene los saldos de vacaciones del equipo para supervisores
+        /// </summary>
+        [HttpGet("saldos-equipo")]
+        public async Task<IActionResult> ObtenerSaldosEquipo(
+            [FromQuery] string? empleadoId = null,
+            [FromQuery] int? periodo = null,
+            [FromQuery] bool incluirSubordinadosNivelN = false,
+            [FromQuery] int pageNumber = 1,
+            [FromQuery] int pageSize = 10,
+            [FromQuery] string? sortBy = null,
+            [FromQuery] bool isDescending = false)
+        {
+            try
+            {
+                var supervisorId = User.GetUserId();
+                if (string.IsNullOrEmpty(supervisorId))
+                {
+                    return Unauthorized("Token inválido - Usuario no identificado");
+                }
+
+                _logger.LogInformation("Supervisor {SupervisorId} consultando saldos del equipo", supervisorId);
+
+                // Obtener empleados del equipo
+                var empleados = await ObtenerEmpleadosDelEquipo(supervisorId, incluirSubordinadosNivelN);
+
+                // Filtrar por empleado específico si se proporciona
+                if (!string.IsNullOrEmpty(empleadoId))
+                {
+                    empleados = empleados.Where(e => e.Id == empleadoId).ToList();
+                }
+
+                // Calcular saldos para cada empleado
+                var saldosCompletos = new List<SaldoVacacionesDto>();
+                foreach (var empleado in empleados)
+                {
+                    var saldos = await CalcularSaldosEmpleado(empleado, periodo);
+                    saldosCompletos.AddRange(saldos);
+                }
+
+                // Aplicar ordenamiento
+                saldosCompletos = AplicarOrdenamientoSaldos(saldosCompletos, sortBy, isDescending);
+
+                // Aplicar paginación
+                var totalCompleto = saldosCompletos.Count;
+                var saldosPaginados = saldosCompletos
+                    .Skip((pageNumber - 1) * pageSize)
+                    .Take(pageSize)
+                    .ToList();
+
+                // Calcular estadísticas
+                var estadisticas = CalcularEstadisticasSaldos(saldosCompletos);
+
+                var response = new
+                {
+                    Total = saldosPaginados.Count,
+                    TotalCompleto = totalCompleto,
+                    Saldos = saldosPaginados,
+                    Supervisor = supervisorId,
+                    Pagina = pageNumber,
+                    TamanoPagina = pageSize,
+                    Estadisticas = estadisticas
+                };
+
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error al obtener saldos del equipo para supervisor {SupervisorId}", User.GetUserId());
+                return StatusCode(500, "Error interno del servidor");
+            }
+        }
+
+        /// <summary>
+        /// Obtiene los empleados del equipo para filtros
+        /// </summary>
+        [HttpGet("empleados-equipo")]
+        public async Task<IActionResult> ObtenerEmpleadosEquipo([FromQuery] bool incluirSubordinadosNivelN = false)
+        {
+            try
+            {
+                var supervisorId = User.GetUserId();
+                if (string.IsNullOrEmpty(supervisorId))
+                {
+                    return Unauthorized("Token inválido - Usuario no identificado");
+                }
+
+                var empleados = await ObtenerEmpleadosDelEquipo(supervisorId, incluirSubordinadosNivelN);
+
+                var empleadosDto = empleados.Select(e => new
+                {
+                    Id = e.Id,
+                    NombreCompleto = e.Persona?.Nombres ?? "Sin nombre",
+                    Email = e.Email ?? "Sin email",
+                    EsDirecto = e.JefeId == supervisorId
+                }).ToList();
+
+                var response = new
+                {
+                    Empleados = empleadosDto,
+                    Total = empleadosDto.Count,
+                    IncluirSubordinadosNivelN = incluirSubordinadosNivelN
+                };
+
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error al obtener empleados del equipo para supervisor {SupervisorId}", User.GetUserId());
+                return StatusCode(500, "Error interno del servidor");
+            }
+        }
+
+        private async Task<List<Usuario>> ObtenerEmpleadosDelEquipo(string supervisorId, bool incluirSubordinadosNivelN)
+        {
+            var usuarios = await _usuarioRepository.GetAllAsync();
+            var supervisor = usuarios.FirstOrDefault(u => u.Id == supervisorId);
+
+            if (supervisor == null)
+            {
+                return new List<Usuario>();
+            }
+
+            var empleados = new List<Usuario>();
+
+            if (incluirSubordinadosNivelN)
+            {
+                // Incluir todos los subordinados de todos los niveles
+                empleados = ObtenerSubordinadosRecursivo(usuarios.ToList(), supervisorId).ToList();
+            }
+            else
+            {
+                // Solo subordinados directos
+                empleados = usuarios.Where(u => u.JefeId == supervisorId && !u.IsDeleted).ToList();
+            }
+
+            return empleados;
+        }
+
+        private IEnumerable<Usuario> ObtenerSubordinadosRecursivo(List<Usuario> todosUsuarios, string jefeId)
+        {
+            var subordinadosDirectos = todosUsuarios.Where(u => u.JefeId == jefeId && !u.IsDeleted);
+
+            foreach (var subordinado in subordinadosDirectos)
+            {
+                yield return subordinado;
+
+                // Recursivamente obtener subordinados de este empleado
+                foreach (var subSubordinado in ObtenerSubordinadosRecursivo(todosUsuarios, subordinado.Id))
+                {
+                    yield return subSubordinado;
+                }
+            }
+        }
+
+        private async Task<List<SaldoVacacionesDto>> CalcularSaldosEmpleado(Usuario empleado, int? periodoFiltro = null)
+        {
+            if (empleado.Persona?.FechaIngreso == null)
+            {
+                return new List<SaldoVacacionesDto>();
+            }
+
+            DateTime fechaIngreso = empleado.Persona.FechaIngreso;
+            DateTime fechaActual = DateTime.Today.AddDays(1).AddTicks(-1);
+
+            // Generar períodos de vacaciones
+            var historial = GenerarPeriodosVacaciones(fechaIngreso, fechaActual);
+
+            // Obtener solicitudes aprobadas del empleado
+            var solicitudes = await _solicitudVacacionesRepository.ObtenerSolicitudesAprobadasPendientes(empleado.Id);
+
+            // Aplicar deducciones
+            AplicarDeducciones(historial, solicitudes);
+
+            // Convertir a DTOs de saldos
+            var saldos = historial.Select(h => new SaldoVacacionesDto
+            {
+                Id = $"{empleado.Id}-{h.Periodo}",
+                EmpleadoId = empleado.Id,
+                NombreEmpleado = empleado.Persona?.Nombres ?? "Sin nombre",
+                Email = empleado.Email ?? "Sin email",
+                Periodo = h.Periodo,
+                DiasVencidas = (int)h.Vencidas,
+                DiasPendientes = (int)h.Pendientes,
+                DiasTruncas = (int)h.Truncas,
+                DiasLibres = (int)h.DiasLibres,
+                DiasBloque = (int)h.DiasBloque,
+                NombreManager = empleado.Jefe?.Persona?.Nombres,
+                FechaCorte = new DateTime(h.Periodo, fechaIngreso.Month, fechaIngreso.Day)
+            }).ToList();
+
+            // Filtrar por período si se especifica
+            if (periodoFiltro.HasValue)
+            {
+                saldos = saldos.Where(s => s.Periodo == periodoFiltro.Value).ToList();
+            }
+
+            return saldos;
+        }
+
+        private List<SaldoVacacionesDto> AplicarOrdenamientoSaldos(List<SaldoVacacionesDto> saldos, string? sortBy, bool isDescending)
+        {
+            if (string.IsNullOrEmpty(sortBy))
+            {
+                return saldos.OrderBy(s => s.NombreEmpleado).ThenByDescending(s => s.Periodo).ToList();
+            }
+
+            IOrderedEnumerable<SaldoVacacionesDto>? query = null;
+
+            switch (sortBy.ToLower())
+            {
+                case "empleado.persona.nombres":
+                case "empleado":
+                case "nombreempleado":
+                    query = isDescending 
+                        ? saldos.OrderByDescending(s => s.NombreEmpleado)
+                        : saldos.OrderBy(s => s.NombreEmpleado);
+                    break;
+                case "periodo":
+                    query = isDescending 
+                        ? saldos.OrderByDescending(s => s.Periodo)
+                        : saldos.OrderBy(s => s.Periodo);
+                    break;
+                case "diasvencidas":
+                    query = isDescending 
+                        ? saldos.OrderByDescending(s => s.DiasVencidas)
+                        : saldos.OrderBy(s => s.DiasVencidas);
+                    break;
+                case "diaspendientes":
+                    query = isDescending 
+                        ? saldos.OrderByDescending(s => s.DiasPendientes)
+                        : saldos.OrderBy(s => s.DiasPendientes);
+                    break;
+                case "diastruncas":
+                    query = isDescending 
+                        ? saldos.OrderByDescending(s => s.DiasTruncas)
+                        : saldos.OrderBy(s => s.DiasTruncas);
+                    break;
+                case "diaslibres":
+                    query = isDescending 
+                        ? saldos.OrderByDescending(s => s.DiasLibres)
+                        : saldos.OrderBy(s => s.DiasLibres);
+                    break;
+                case "diasbloque":
+                    query = isDescending 
+                        ? saldos.OrderByDescending(s => s.DiasBloque)
+                        : saldos.OrderBy(s => s.DiasBloque);
+                    break;
+                case "manager.persona.nombres":
+                case "nombremanager":
+                    query = isDescending 
+                        ? saldos.OrderByDescending(s => s.NombreManager ?? "")
+                        : saldos.OrderBy(s => s.NombreManager ?? "");
+                    break;
+                default:
+                    query = saldos.OrderBy(s => s.NombreEmpleado);
+                    break;
+            }
+
+            return (query ?? saldos.OrderBy(s => s.NombreEmpleado)).ThenBy(s => s.Periodo).ToList();
+        }
+
+        private object CalcularEstadisticasSaldos(List<SaldoVacacionesDto> saldos)
+        {
+            var empleadosUnicos = saldos.Select(s => s.EmpleadoId).Distinct().Count();
+
+            return new
+            {
+                TotalEmpleados = empleadosUnicos,
+                TotalDiasVencidas = saldos.Sum(s => s.DiasVencidas),
+                TotalDiasPendientes = saldos.Sum(s => s.DiasPendientes),
+                TotalDiasTruncas = saldos.Sum(s => s.DiasTruncas),
+                TotalDiasLibres = saldos.Sum(s => s.DiasLibres),
+                TotalDiasBloque = saldos.Sum(s => s.DiasBloque)
+            };
         }
     }
 }

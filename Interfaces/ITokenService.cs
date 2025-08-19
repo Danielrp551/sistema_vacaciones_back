@@ -8,6 +8,6 @@ namespace sistema_vacaciones_back.Interfaces
 {
     public interface ITokenService
     {
-        string CreateToken(IdentityUser user);
+        string CreateToken(IdentityUser user, IList<string> roles);
     }
 }

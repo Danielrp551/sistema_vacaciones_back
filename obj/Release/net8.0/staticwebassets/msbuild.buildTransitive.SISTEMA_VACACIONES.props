@@ -1,3 +1,0 @@
-﻿<Project>
-  <Import Project="..\buildMultiTargeting\SISTEMA_VACACIONES.props" />
-</Project>
