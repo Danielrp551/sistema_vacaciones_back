@@ -193,3 +193,4 @@ C:\Users\Danielrp551\OneDrive\Documentos\Repositorios\SISTEMA VACACIONES\sistema
 C:\Users\Danielrp551\OneDrive\Documentos\Repositorios\SISTEMA VACACIONES\sistema_vacaciones_back\obj\Debug\net8.0\SISTEMA_VACACIONES.pdb
 C:\Users\Danielrp551\OneDrive\Documentos\Repositorios\SISTEMA VACACIONES\sistema_vacaciones_back\obj\Debug\net8.0\SISTEMA_VACACIONES.genruntimeconfig.cache
 C:\Users\Danielrp551\OneDrive\Documentos\Repositorios\SISTEMA VACACIONES\sistema_vacaciones_back\obj\Debug\net8.0\ref\SISTEMA_VACACIONES.dll
+C:\Users\Danielrp551\OneDrive\Documentos\Repositorios\SISTEMA VACACIONES\sistema_vacaciones_back\bin\Debug\net8.0\appsettings.Production.temp.json

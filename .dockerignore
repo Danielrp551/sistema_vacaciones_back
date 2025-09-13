@@ -1,0 +1,50 @@
+# ============================================================================
+# .DOCKERIGNORE PARA SISTEMA DE VACACIONES
+# ============================================================================
+# Archivos y carpetas que Docker debe ignorar durante el build
+# para optimizar velocidad y tamaño de la imagen
+# ============================================================================
+
+# Directorios de build y output
+**/bin/
+**/obj/
+**/out/
+
+# Archivos de Visual Studio
+**/.vs/
+**/.vscode/
+*.user
+*.suo
+*.userprefs
+
+# Archivos de desarrollo
+**/appsettings.Development.json
+**/appsettings.Local.json
+
+# Logs y datos temporales
+**/logs/
+**/*.log
+**/temp/
+**/tmp/
+
+# Documentación y archivos de proyecto
+**/*.md
+**/docs/
+**/.git/
+**/.gitignore
+
+# Archivos de prueba
+**/TestResults/
+**/*Test*.cs
+
+# Node modules (si los hubiera)
+**/node_modules/
+**/npm-debug.log
+
+# Archivos de sistema
+**/.DS_Store
+**/Thumbs.db
+
+# Archivos específicos del proyecto
+**/PRUEBA_TECNICA_EY.http
+**/*.http

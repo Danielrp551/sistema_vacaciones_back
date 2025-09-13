@@ -83,7 +83,26 @@ namespace sistema_vacaciones_back.Repository
                 .Select(rp => rp.Permiso.CodigoPermiso) 
                 .Distinct()
                 .ToListAsync();
-            return permisos;
+
+            // Verificar si el usuario tiene personas a cargo (es jefe)
+            var tieneSubordinados = await _context.Usuarios
+                .AnyAsync(u => u.JefeId == usuario.Id && !u.IsDeleted);
+
+            // Si es jefe, agregar permisos adicionales de gestión
+            if (tieneSubordinados)
+            {
+                var permisosJefe = new List<string>
+                {
+                    "GESTION-SOLICITUDES-MENU",
+                    "SALDOS-VACACIONES-MENU",
+                    "PROGRAMACION-VACACIONES-MENU"
+                };
+
+                permisos.AddRange(permisosJefe);
+            }
+
+            // Eliminar permisos duplicados y retornar
+            return permisos.Distinct().ToList();
         }
 
         public async Task<(int, List<UsuarioDto>)> GetUsuarios(UsuariosQueryObject queryObject, string usuarioId)
