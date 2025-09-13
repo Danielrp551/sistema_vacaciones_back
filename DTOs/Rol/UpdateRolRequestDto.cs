@@ -12,7 +12,7 @@ namespace sistema_vacaciones_back.DTOs.Rol
         public string Id { get; set; }
 
         [Required(ErrorMessage = "El campo Nombre es requerido.")]
-        [MinLength(5, ErrorMessage = "El campo Nombre debe tener al menos 5 carácteres.")]
+        [MinLength(3, ErrorMessage = "El campo Nombre debe tener al menos 3 carácteres.")]
         [MaxLength(100, ErrorMessage = "El campo Nombre no debe sobrepasar los 100 carácteres.")]
         public string Name { get; set; }
 

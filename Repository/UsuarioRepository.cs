@@ -80,7 +80,7 @@ namespace sistema_vacaciones_back.Repository
 
             var permisos = await _context.RolPermisos
                 .Where(rp => rp.Rol.Name != null && roles.Contains(rp.Rol.Name))
-                .Select(rp => rp.Permiso.Nombre) 
+                .Select(rp => rp.Permiso.CodigoPermiso) 
                 .Distinct()
                 .ToListAsync();
             return permisos;

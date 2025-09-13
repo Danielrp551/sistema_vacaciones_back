@@ -19,7 +19,9 @@ namespace sistema_vacaciones_back.Repository
         /// </summary>
         private static readonly List<string> MODULOS_DISPONIBLES = new List<string>
         {
-            "ADMINISTRACION"
+            "ADMINISTRACION",
+            "GENERAL",
+            "REPORTE EQUIPO"
         };
 
         public PermisoRepository(ApplicationDBContext context)

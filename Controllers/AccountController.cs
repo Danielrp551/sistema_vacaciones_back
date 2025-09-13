@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -125,6 +127,55 @@ namespace SISTEMA_VACACIONES.Controllers
                     Persona = persona.ToPersonaDto(),
                     Roles = new List<string> { "User" },
                     Permisos = permisos
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
+        }
+
+        [HttpGet("me")]
+        [Authorize]
+        public async Task<IActionResult> GetCurrentUser()
+        {
+            try
+            {
+                var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                
+                if (string.IsNullOrEmpty(userIdClaim))
+                {
+                    return Unauthorized("Token inválido");
+                }
+
+                var user = await _usuarioRepository.GetByIdAsync(userIdClaim);
+                if (user == null)
+                {
+                    return NotFound("Usuario no encontrado");
+                }
+
+                // Los datos de persona ya están cargados por la relación
+                if (user.Persona == null)
+                {
+                    return NotFound("Datos de persona no encontrados");
+                }
+
+                // Obtener los permisos del usuario
+                var permisos = await _usuarioRepository.GetUserPermissionsAsync(user);
+
+                // Obtener roles del usuario
+                var userRoles = await _usuarioRepository.GetUserRolesAsync(user);
+
+                return Ok(new CurrentUserDto
+                {
+                    Id = user.Id,
+                    UserName = user.UserName!,
+                    Email = user.Email!,
+                    Persona = user.Persona.ToPersonaDto(),
+                    Roles = userRoles.ToList(),
+                    Permisos = permisos,
+                    IsActive = !user.IsDeleted, // Usamos la propiedad disponible
+                    LastLoginDate = DateTime.UtcNow // Valor actual para now
                 });
             }
             catch (Exception ex)
