@@ -351,7 +351,7 @@ namespace sistema_vacaciones_back.Repository
                     .Include(u => u.Departamento)
                     .Include(u => u.Jefe)
                         .ThenInclude(j => j != null ? j.Persona : null)
-                    .FirstOrDefaultAsync(u => u.Id == usuarioId && !u.IsDeleted);
+                    .FirstOrDefaultAsync(u => u.Id == usuarioId);
 
                 if (usuario == null)
                     return null;
@@ -705,13 +705,17 @@ namespace sistema_vacaciones_back.Repository
                 var extranjeros = await _context.Users
                     .CountAsync(u => !u.IsDeleted && u.Persona != null && u.Persona.Extranjero);
 
+                var usuariosConJefe = await _context.Users
+                    .CountAsync(u => !u.IsDeleted && u.JefeId != null);
+
                 return new UsuariosEstadisticasDto
                 {
                     TotalUsuarios = totalUsuarios,
                     UsuariosActivos = usuariosActivos,
                     UsuariosInactivos = usuariosInactivos,
                     UsuariosForzarCambio = usuariosConForzarCambio,
-                    UsuariosExtranjeros = extranjeros
+                    UsuariosExtranjeros = extranjeros,
+                    UsuariosConJefe = usuariosConJefe
                 };
             }
             catch (Exception)
@@ -905,6 +909,7 @@ namespace sistema_vacaciones_back.Repository
                 // Nota: No hay propiedad ForzarCambioContrasena en Usuario - necesita implementarse
                 var forzarCambio = 0; // Temporalmente 0 hasta implementar la funcionalidad
                 var extranjeros = await query.CountAsync(u => u.Persona != null && u.Persona.Extranjero);
+                var usuariosConJefe = await query.CountAsync(u => u.JefeId != null);
 
                 return new UsuariosEstadisticasDto
                 {
@@ -912,12 +917,291 @@ namespace sistema_vacaciones_back.Repository
                     UsuariosActivos = activos,
                     UsuariosInactivos = inactivos,
                     UsuariosForzarCambio = forzarCambio,
-                    UsuariosExtranjeros = extranjeros
+                    UsuariosExtranjeros = extranjeros,
+                    UsuariosConJefe = usuariosConJefe
                 };
             }
             catch (Exception)
             {
                 return new UsuariosEstadisticasDto();
+            }
+        }
+
+        #endregion
+
+        #region Métodos para Bulk Import
+
+        /// <summary>
+        /// Obtiene el ID de un departamento por su código
+        /// </summary>
+        public async Task<string?> GetDepartamentoIdByCodigo(string codigo)
+        {
+            try
+            {
+                var departamento = await _context.Departamentos
+                    .FirstOrDefaultAsync(d => !d.IsDeleted && d.Codigo == codigo);
+                return departamento?.Id;
+            }
+            catch (Exception)
+            {
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Obtiene el ID de un usuario por su DNI
+        /// </summary>
+        public async Task<string?> GetUsuarioIdByDni(string dni)
+        {
+            try
+            {
+                var usuario = await _context.Users
+                    .FirstOrDefaultAsync(u => !u.IsDeleted && u.Persona != null && u.Persona.Dni == dni);
+                return usuario?.Id;
+            }
+            catch (Exception)
+            {
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Valida que múltiples emails no existan en el sistema
+        /// </summary>
+        public async Task<List<string>> GetExistingEmails(List<string> emails)
+        {
+            try
+            {
+                var emailsLower = emails.Select(e => e.ToLower()).ToList();
+                var existingEmails = await _context.Users
+                    .Where(u => !u.IsDeleted && u.Email != null && emailsLower.Contains(u.Email.ToLower()))
+                    .Select(u => u.Email!)
+                    .ToListAsync();
+                return existingEmails;
+            }
+            catch (Exception)
+            {
+                return new List<string>();
+            }
+        }
+
+        /// <summary>
+        /// Valida que múltiples DNIs no existan en el sistema
+        /// </summary>
+        public async Task<List<string>> GetExistingDnis(List<string> dnis)
+        {
+            try
+            {
+                var existingDnis = await _context.Users
+                    .Where(u => !u.IsDeleted && u.Persona != null && dnis.Contains(u.Persona.Dni!))
+                    .Select(u => u.Persona!.Dni!)
+                    .ToListAsync();
+                return existingDnis;
+            }
+            catch (Exception)
+            {
+                return new List<string>();
+            }
+        }
+
+        /// <summary>
+        /// Valida que múltiples códigos de departamento existan
+        /// </summary>
+        public async Task<Dictionary<string, string>> GetDepartamentosByCodigos(List<string> codigos)
+        {
+            try
+            {
+                var departamentos = await _context.Departamentos
+                    .Where(d => !d.IsDeleted && d.Codigo != null && codigos.Contains(d.Codigo))
+                    .ToDictionaryAsync(d => d.Codigo!, d => d.Id);
+                return departamentos;
+            }
+            catch (Exception)
+            {
+                return new Dictionary<string, string>();
+            }
+        }
+
+        /// <summary>
+        /// Valida que múltiples DNIs de jefes existan
+        /// </summary>
+        public async Task<Dictionary<string, string>> GetJefesByDnis(List<string> dnis)
+        {
+            try
+            {
+                // Validar entrada
+                if (dnis == null || !dnis.Any())
+                {
+                    return new Dictionary<string, string>();
+                }
+
+                // Normalizar DNIs de entrada (eliminar espacios y filtrar nulos/vacíos)
+                var dnisNormalizados = dnis
+                    .Where(d => !string.IsNullOrWhiteSpace(d))
+                    .Select(d => d.Trim())
+                    .Where(d => !string.IsNullOrEmpty(d))
+                    .Distinct()
+                    .ToList();
+
+                if (!dnisNormalizados.Any())
+                {
+                    return new Dictionary<string, string>();
+                }
+
+                // Consulta más segura con validaciones adicionales
+                var jefes = await _context.Users
+                    .Where(u => u != null &&
+                               !u.IsDeleted &&
+                               u.Persona != null &&
+                               u.Persona.Dni != null &&
+                               !string.IsNullOrWhiteSpace(u.Persona.Dni))
+                    .Include(u => u.Persona)
+                    .ToListAsync(); // Traer a memoria primero
+
+                // Filtrar en memoria para evitar problemas de traducción EF
+                var jefesFiltrados = jefes
+                    .Where(u => u.Persona?.Dni != null && 
+                               dnisNormalizados.Contains(u.Persona.Dni.Trim()))
+                    .ToDictionary(u => u.Persona!.Dni!.Trim(), u => u.Id);
+
+                return jefesFiltrados;
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine($"Error en GetJefesByDnis: {e.Message}");
+                Console.WriteLine($"StackTrace: {e.StackTrace}");
+                return new Dictionary<string, string>();
+            }
+        }
+
+        /// <summary>
+        /// Valida que múltiples roles existan en el sistema
+        /// </summary>
+        public async Task<List<string>> GetValidRoles(List<string> roles)
+        {
+            try
+            {
+                var validRoles = await _context.Roles
+                    .Where(r => !r.IsDeleted && roles.Contains(r.Name!))
+                    .Select(r => r.Name!)
+                    .ToListAsync();
+                return validRoles;
+            }
+            catch (Exception)
+            {
+                return new List<string>();
+            }
+        }
+
+        /// <summary>
+        /// Crea múltiples usuarios en una transacción
+        /// </summary>
+        public async Task<List<(bool Success, List<string> Errors, string? UserId, string Email)>> CreateUsuariosBulkAsync(
+            List<(Usuario usuario, Persona persona, string password, List<string> roles)> usuariosData)
+        {
+            var resultados = new List<(bool Success, List<string> Errors, string? UserId, string Email)>();
+
+            try
+            {
+                using var transaction = await _context.Database.BeginTransactionAsync();
+
+                try
+                {
+                    foreach (var (usuario, persona, password, roles) in usuariosData)
+                    {
+                        var resultado = await CreateUsuarioIndividualAsync(usuario, persona, password, roles);
+                        resultados.Add((resultado.Success, resultado.Errors, resultado.UserId, usuario.Email!));
+
+                        // Si falla un usuario y no continuamos con errores, hacer rollback
+                        if (!resultado.Success)
+                        {
+                            // Por ahora continuamos con todos, pero se puede cambiar según configuración
+                            // await transaction.RollbackAsync();
+                            // return resultados;
+                        }
+                    }
+
+                    await transaction.CommitAsync();
+                    return resultados;
+                }
+                catch (Exception)
+                {
+                    await transaction.RollbackAsync();
+                    throw;
+                }
+            }
+            catch (Exception ex)
+            {
+                // Si hay error general, marcar todos como fallidos
+                foreach (var (usuario, _, _, _) in usuariosData)
+                {
+                    if (!resultados.Any(r => r.Email == usuario.Email))
+                    {
+                        resultados.Add((false, new List<string> { "Error en transacción: " + ex.Message }, null, usuario.Email!));
+                    }
+                }
+                return resultados;
+            }
+        }
+
+        /// <summary>
+        /// Crea un usuario individual dentro de una transacción (método auxiliar)
+        /// </summary>
+        private async Task<(bool Success, List<string> Errors, string? UserId)> CreateUsuarioIndividualAsync(
+            Usuario usuario, Persona persona, string password, List<string> roles)
+        {
+            var errores = new List<string>();
+
+            try
+            {
+                // ✅ 1. Crear la persona primero
+                persona.Id = Guid.NewGuid().ToString();
+                _context.Personas.Add(persona);
+                await _context.SaveChangesAsync();
+
+                // ✅ 2. Configurar el usuario
+                usuario.Id = Guid.NewGuid().ToString();
+                usuario.UserName = usuario.Email;
+                usuario.NormalizedUserName = usuario.Email!.ToUpper();
+                usuario.NormalizedEmail = usuario.Email!.ToUpper();
+                usuario.EmailConfirmed = true;
+                usuario.PersonaId = persona.Id;
+                usuario.IsDeleted = false;
+                usuario.CreatedOn = DateTime.UtcNow;
+                // usuario.CreatedBy se asigna externamente
+
+                // ✅ 3. Crear el usuario con contraseña
+                var resultado = await _userManager.CreateAsync(usuario, password);
+
+                if (!resultado.Succeeded)
+                {
+                    foreach (var error in resultado.Errors)
+                    {
+                        errores.Add(error.Description);
+                    }
+                    return (false, errores, null);
+                }
+
+                // ✅ 4. Asignar roles
+                if (roles.Any())
+                {
+                    var resultadoRoles = await _userManager.AddToRolesAsync(usuario, roles);
+                    if (!resultadoRoles.Succeeded)
+                    {
+                        foreach (var error in resultadoRoles.Errors)
+                        {
+                            errores.Add($"Error al asignar rol: {error.Description}");
+                        }
+                        return (false, errores, null);
+                    }
+                }
+
+                return (true, errores, usuario.Id);
+            }
+            catch (Exception ex)
+            {
+                errores.Add("Error interno al crear el usuario: " + ex.Message);
+                return (false, errores, null);
             }
         }
 

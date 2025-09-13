@@ -86,10 +86,16 @@ builder.Services.AddScoped<IUsuarioRepository, UsuarioRepository>();
 builder.Services.AddScoped<IHistorialVacacionesRepository, HistorialVacacionesRepository>();
 builder.Services.AddScoped<ISolicitudVacacionesRepository, SolicitudVacacionesRepository>();
 builder.Services.AddScoped<IRolRepository, RolRepository>();
+builder.Services.AddScoped<IPermisoRepository, PermisoRepository>();
 builder.Services.AddScoped<ITokenService, TokenService>();
 
 // Servicio de auditoría
 builder.Services.AddScoped<IAuditoriaService, AuditoriaService>();
+
+// Servicios de Bulk Import
+builder.Services.AddScoped<IBulkImportService, BulkImportService>();
+builder.Services.AddScoped<IBulkImportValidator, BulkImportValidator>();
+builder.Services.AddScoped<IBulkImportFileProcessor, BulkImportFileProcessor>();
 
 
 // PARA PROBAR EL JWT EN SWAGGER

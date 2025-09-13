@@ -22,6 +22,9 @@ namespace sistema_vacaciones_back.Models.Enums
         [Description("Gestión de Roles")]
         GESTION_ROLES,
 
+        [Description("Gestión de Permisos")]
+        GESTION_PERMISOS,
+
         [Description("Configuración del Sistema")]
         CONFIGURACION_SISTEMA,
 

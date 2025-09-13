@@ -401,7 +401,39 @@ namespace sistema_vacaciones_back.Controllers
                     return BadRequest(new { message = "Error al crear usuario", errors });
                 }
 
+                if (string.IsNullOrEmpty(userId))
+                {
+                    _logger.LogError("Usuario creado pero ID no disponible para {Email}", createDto.Email);
+                    return StatusCode(500, new { message = "Usuario creado pero ID no disponible" });
+                }
+
                 _logger.LogInformation("Usuario creado exitosamente: {UserId}, Email: {Email}", userId, createDto.Email);
+
+                // ✅ REGISTRAR ACCIÓN DE AUDITORÍA
+                try
+                {
+                    var ipAddress = Request.HttpContext.Connection.RemoteIpAddress?.ToString() ?? "0.0.0.0";
+                    var userAgent = Request.Headers["User-Agent"].ToString();
+
+                    await _auditoriaService.RegistrarAccionSimpleAsync(
+                        TipoAccionAuditoria.CREAR_USUARIO,
+                        ModuloSistema.GESTION_USUARIOS,
+                        "AspNetUsers",
+                        userId,
+                        currentUserId,
+                        usuarioAfectadoId: userId,
+                        motivo: $"Nuevo usuario creado: {createDto.Email}",
+                        ipAddress: ipAddress,
+                        severidad: SeveridadAuditoria.INFO
+                    );
+
+                    _logger.LogInformation("Acción de auditoría registrada para creación de usuario: {UserId} por admin: {AdminId}", userId, currentUserId);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error al registrar auditoría para creación de usuario: {UserId}", userId);
+                    // No fallar la operación por error de auditoría, pero registrarlo
+                }
 
                 // ✅ Retornar resultado exitoso con información relevante
                 return CreatedAtAction(
@@ -536,6 +568,33 @@ namespace sistema_vacaciones_back.Controllers
                 }
 
                 _logger.LogInformation("Usuario actualizado exitosamente: {Id}", id);
+
+                // ✅ REGISTRAR ACCIÓN DE AUDITORÍA
+                try
+                {
+                    var ipAddress = Request.HttpContext.Connection.RemoteIpAddress?.ToString() ?? "0.0.0.0";
+                    var userAgent = Request.Headers["User-Agent"].ToString();
+                    var currentUserId = User.GetUserId() ?? "Sistema";
+
+                    await _auditoriaService.RegistrarAccionSimpleAsync(
+                        TipoAccionAuditoria.EDITAR_USUARIO,
+                        ModuloSistema.GESTION_USUARIOS,
+                        "AspNetUsers",
+                        id,
+                        currentUserId,
+                        usuarioAfectadoId: id,
+                        motivo: $"Usuario actualizado: {updateDto.Email}",
+                        ipAddress: ipAddress,
+                        severidad: SeveridadAuditoria.INFO
+                    );
+
+                    _logger.LogInformation("Acción de auditoría registrada para actualización de usuario: {Id} por admin: {AdminId}", id, currentUserId);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error al registrar auditoría para actualización de usuario: {Id}", id);
+                    // No fallar la operación por error de auditoría, pero registrarlo
+                }
 
                 return Ok(new { message = "Usuario actualizado exitosamente", userId = id });
             }
@@ -804,6 +863,33 @@ namespace sistema_vacaciones_back.Controllers
                 var accion = nuevoEstado ? "activado" : "desactivado";
 
                 _logger.LogInformation("Usuario {Id} {Accion} exitosamente por admin: {AdminId}", id, accion, currentUserId);
+
+                // ✅ REGISTRAR ACCIÓN DE AUDITORÍA
+                try
+                {
+                    var ipAddress = Request.HttpContext.Connection.RemoteIpAddress?.ToString() ?? "0.0.0.0";
+                    var userAgent = Request.Headers["User-Agent"].ToString();
+                    var tipoAccion = nuevoEstado ? TipoAccionAuditoria.ACTIVAR_USUARIO : TipoAccionAuditoria.DESACTIVAR_USUARIO;
+
+                    await _auditoriaService.RegistrarAccionSimpleAsync(
+                        tipoAccion,
+                        ModuloSistema.GESTION_USUARIOS,
+                        "AspNetUsers",
+                        id,
+                        currentUserId ?? "Sistema",
+                        usuarioAfectadoId: id,
+                        motivo: $"Usuario {accion} desde estado {(estadoAnterior ? "Activo" : "Inactivo")}",
+                        ipAddress: ipAddress,
+                        severidad: SeveridadAuditoria.WARNING
+                    );
+
+                    _logger.LogInformation("Acción de auditoría registrada para cambio de estado de usuario: {Id} por admin: {AdminId}", id, currentUserId);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error al registrar auditoría para cambio de estado de usuario: {Id}", id);
+                    // No fallar la operación por error de auditoría, pero registrarlo
+                }
 
                 return Ok(new
                 {

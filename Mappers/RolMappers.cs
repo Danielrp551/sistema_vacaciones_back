@@ -17,15 +17,15 @@ namespace sistema_vacaciones_back.Mappers
                 Id = rol.Id,
                 Name = rol.Name,
                 Descripcion = rol.Descripcion,
-                NumeroPersonas = rol.NumeroPersonas,
+                NumeroPersonas = 0, // Se calculará dinámicamente en el repositorio
                 Estado = rol.Estado,
                 // Audit fields
-                CreatedBy = rol.CreatedBy.ToString(),
+                CreatedBy = rol.CreatedBy?.ToString() ?? string.Empty,
                 CreatedOn = rol.CreatedOn,
-                UpdatedBy = rol.UpdatedBy.ToString(),
-                UpdatedOn = (DateTime)rol.UpdatedOn,
+                UpdatedBy = rol.UpdatedBy?.ToString() ?? string.Empty,
+                UpdatedOn = rol.UpdatedOn ?? DateTime.MinValue,
                 isDeleted = rol.IsDeleted,
-                Permisos = null
+                Permisos = new List<PermisoDto>() // Inicializar con lista vacía en lugar de null
             };
         }
 

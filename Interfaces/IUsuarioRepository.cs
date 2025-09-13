@@ -97,5 +97,64 @@ namespace sistema_vacaciones_back.Interfaces
         /// Obtiene el número de subordinados directos de un usuario
         /// </summary>
         Task<int> GetNumeroSubordinadosAsync(string usuarioId);
+
+        // ========== MÉTODOS PARA BULK IMPORT ==========
+
+        /// <summary>
+        /// Obtiene el ID de un departamento por su código
+        /// </summary>
+        /// <param name="codigo">Código del departamento</param>
+        /// <returns>ID del departamento o null si no existe</returns>
+        Task<string?> GetDepartamentoIdByCodigo(string codigo);
+
+        /// <summary>
+        /// Obtiene el ID de un usuario por su DNI
+        /// </summary>
+        /// <param name="dni">DNI del usuario</param>
+        /// <returns>ID del usuario o null si no existe</returns>
+        Task<string?> GetUsuarioIdByDni(string dni);
+
+        /// <summary>
+        /// Valida que múltiples emails no existan en el sistema
+        /// </summary>
+        /// <param name="emails">Lista de emails a validar</param>
+        /// <returns>Lista de emails que ya existen</returns>
+        Task<List<string>> GetExistingEmails(List<string> emails);
+
+        /// <summary>
+        /// Valida que múltiples DNIs no existan en el sistema
+        /// </summary>
+        /// <param name="dnis">Lista de DNIs a validar</param>
+        /// <returns>Lista de DNIs que ya existen</returns>
+        Task<List<string>> GetExistingDnis(List<string> dnis);
+
+        /// <summary>
+        /// Valida que múltiples códigos de departamento existan
+        /// </summary>
+        /// <param name="codigos">Lista de códigos de departamento</param>
+        /// <returns>Diccionario con código como key e ID como value para los que existen</returns>
+        Task<Dictionary<string, string>> GetDepartamentosByCodigos(List<string> codigos);
+
+        /// <summary>
+        /// Valida que múltiples DNIs de jefes existan
+        /// </summary>
+        /// <param name="dnis">Lista de DNIs de jefes</param>
+        /// <returns>Diccionario con DNI como key e ID de usuario como value para los que existen</returns>
+        Task<Dictionary<string, string>> GetJefesByDnis(List<string> dnis);
+
+        /// <summary>
+        /// Valida que múltiples roles existan en el sistema
+        /// </summary>
+        /// <param name="roles">Lista de nombres de roles</param>
+        /// <returns>Lista de roles que existen</returns>
+        Task<List<string>> GetValidRoles(List<string> roles);
+
+        /// <summary>
+        /// Crea múltiples usuarios en una transacción
+        /// </summary>
+        /// <param name="usuariosData">Lista de tuplas con Usuario, Persona, contraseña y roles</param>
+        /// <returns>Lista de resultados con éxito/error y ID generado</returns>
+        Task<List<(bool Success, List<string> Errors, string? UserId, string Email)>> CreateUsuariosBulkAsync(
+            List<(Usuario usuario, Persona persona, string password, List<string> roles)> usuariosData);
     }
 }

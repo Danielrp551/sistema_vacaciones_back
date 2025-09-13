@@ -29,6 +29,35 @@ namespace sistema_vacaciones_back.Models.Enums
         [Description("Rol cambiado")]
         CAMBIAR_ROL,
 
+        // === GESTIÓN DE ROLES ===
+        [Description("Rol creado")]
+        CREAR_ROL,
+
+        [Description("Rol editado")]
+        EDITAR_ROL,
+
+        [Description("Rol eliminado")]
+        ELIMINAR_ROL,
+
+        [Description("Rol activado")]
+        ACTIVAR_ROL,
+
+        [Description("Rol desactivado")]
+        DESACTIVAR_ROL,
+
+        [Description("Permisos de rol modificados")]
+        MODIFICAR_PERMISOS_ROL,
+
+        // === GESTIÓN DE PERMISOS ===
+        [Description("Permiso creado")]
+        CreacionPermiso,
+
+        [Description("Permiso actualizado")]
+        ActualizacionPermiso,
+
+        [Description("Permiso eliminado")]
+        EliminacionPermiso,
+
         // === SOLICITUDES DE VACACIONES ===
         [Description("Solicitud creada")]
         CREAR_SOLICITUD,
@@ -74,6 +103,13 @@ namespace sistema_vacaciones_back.Models.Enums
         GENERAR_REPORTE,
 
         [Description("Reporte exportado")]
-        EXPORTAR_REPORTE
+        EXPORTAR_REPORTE,
+
+        // === BULK IMPORT ===
+        [Description("Importación masiva exitosa")]
+        BULK_IMPORT_SUCCESS,
+
+        [Description("Error en importación masiva")]
+        BULK_IMPORT_ERROR
     }
 }

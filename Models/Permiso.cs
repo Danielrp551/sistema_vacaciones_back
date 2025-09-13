@@ -47,5 +47,26 @@ namespace sistema_vacaciones_back.Models
         public string? UpdatedBy { get; set; }
 
         public DateTime? UpdatedOn { get; set; }
+
+        /// <summary>
+        /// Indica si el permiso está activo
+        /// </summary>
+        public bool IsActive { get; set; } = true;
+
+        /// <summary>
+        /// Indica si el permiso ha sido eliminado (soft delete)
+        /// </summary>
+        public bool IsDeleted { get; set; } = false;
+
+        /// <summary>
+        /// Fecha de eliminación (soft delete)
+        /// </summary>
+        public DateTime? DeletedOn { get; set; }
+
+        /// <summary>
+        /// Usuario que eliminó el permiso (soft delete)
+        /// </summary>
+        [MaxLength(450)]
+        public string? DeletedBy { get; set; }
     }
 }

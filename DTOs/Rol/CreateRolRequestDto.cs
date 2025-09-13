@@ -19,6 +19,6 @@ namespace sistema_vacaciones_back.DTOs.Rol
         public string Descripcion { get; set; }
 
         [Required(ErrorMessage = "El rol debe tener por lo menos un permiso asociado.")]
-        public List<int> Permisos { get; set; }          
+        public List<string> Permisos { get; set; }          
     }
 }
