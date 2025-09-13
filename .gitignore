@@ -1,3 +1,136 @@
+# ============================================================================
+# .NET GITIGNORE COMPLETO PARA SEGURIDAD
+# ============================================================================
+
+# ========================================================================
+# ARCHIVOS DE CONFIGURACIÓN SENSIBLES - ¡MUY IMPORTANTE!
+# ========================================================================
+appsettings.Production.json
+appsettings.Local.json
+appsettings.*.json
+!appsettings.json
+!appsettings.Development.json
+
+# Archivos de secretos y configuración local
+secrets.json
+*.secrets.json
+.env
+.env.local
+.env.production
+.env.development
+
+# ========================================================================
+# .NET BUILD OUTPUTS
+# ========================================================================
+bin/
+obj/
+out/
+
+# Build results
+[Dd]ebug/
+[Dd]ebugPublic/
+[Rr]elease/
+[Rr]eleases/
+x64/
+x86/
+[Ww][Ii][Nn]32/
+[Aa][Rr][Mm]/
+[Aa][Rr][Mm]64/
+bld/
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+[Ll]ogs/
+
+# ========================================================================
+# VISUAL STUDIO / RIDER
+# ========================================================================
+.vs/
+.vscode/
+*.rsuser
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+*.userprefs
+
+# Rider
+.idea/
+*.sln.iml
+
+# ========================================================================
+# PACKAGES Y DEPENDENCIAS
+# ========================================================================
+*.nupkg
+*.snupkg
+.nuget/
+project.lock.json
+project.fragment.lock.json
+artifacts/
+
+# ========================================================================
+# TESTING
+# ========================================================================
+TestResults/
+[Tt]est[Rr]esult*/
+*.coverage
+*.coveragexml
+coverage.json
+coverage.xml
+*.cover
+*.py,cover
+.pytest_cache/
+
+# ========================================================================
+# DOCKER (opcional)
+# ========================================================================
+**/Dockerfile.dev
+docker-compose.override.yml
+.dockerignore
+
+# ========================================================================
+# AZURE Y DEPLOYMENT
+# ========================================================================
+*.Azure.json
+*.PublishSettings
+*.azurePubxml
+
+# ========================================================================
+# SEGURIDAD Y CERTIFICADOS
+# ========================================================================
+*.pfx
+*.p12
+*.key
+*.pem
+*.crt
+*.cer
+certificate.json
+
+# ========================================================================
+# LOGS Y TEMPORALES
+# ========================================================================
+*.log
+*.tmp
+*.temp
+*.cache
+*.pid
+*.seed
+*.pid.lock
+
+# ========================================================================
+# OS GENERATED
+# ========================================================================
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# ========================================================================
+# LEGACY (contenido original)
+# ========================================================================
 # Prerequisites
 *.d
 
