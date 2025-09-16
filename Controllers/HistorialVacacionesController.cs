@@ -192,6 +192,9 @@ namespace sistema_vacaciones_back.Controllers
                 int totalLibresRestar = 0;
                 switch (totalHabiles)
                 {
+                    case 0:
+                        totalLibresFindeRestar = 0;
+                        break;
                     case 1:
                         totalLibresFindeRestar = 0;
                         break;

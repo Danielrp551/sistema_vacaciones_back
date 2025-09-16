@@ -95,7 +95,8 @@ namespace sistema_vacaciones_back.Repository
                 {
                     "GESTION-SOLICITUDES-MENU",
                     "SALDOS-VACACIONES-MENU",
-                    "PROGRAMACION-VACACIONES-MENU"
+                    "PROGRAMACION-VACACIONES-MENU",
+                    "REPORTE-EQUIPO-MENU"
                 };
 
                 permisos.AddRange(permisosJefe);

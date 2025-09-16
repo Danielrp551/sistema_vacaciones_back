@@ -286,6 +286,9 @@ namespace sistema_vacaciones_back.Repository
                 int totalLibresRestar = 0;
                 switch (totalHabiles)
                 {
+                    case 0:
+                        totalLibresFindeRestar = 0;
+                        break;
                     case 1:
                         totalLibresFindeRestar = 0;
                         break;
